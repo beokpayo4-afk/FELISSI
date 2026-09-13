@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.Python
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+backend/.env
+
+# Build and cache
+dist/
+build/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.vite/
+*.tsbuildinfo
+
+# Databases
+*.sqlite3
+*.db
+
+# Media / local uploads
+backend/media/
+backend/staticfiles/
+
+# IDE and OS
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json*
+!.vscode/settings.json
+!.vscode/extensions.json*
+!.vscode/settings.json
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+*.swp
+
+# Logs
+*.log
+npm-debug.log*
+
+# Python tooling
+.python-version

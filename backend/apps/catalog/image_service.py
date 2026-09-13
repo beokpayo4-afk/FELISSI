@@ -1,0 +1,121 @@
+from __future__ import annotations
+
+import uuid
+
+from django.db import transaction
+
+from apps.catalog.image_processing import optimize_product_image
+from apps.catalog.models import Product, ProductImage
+from apps.core.object_storage import ObjectStorageError, get_object_storage
+
+
+def build_product_image_key(product_id, extension: str = "webp") -> str:
+    return f"products/{product_id}/{uuid.uuid4().hex}.{extension}"
+
+
+def _set_primary(product: Product, image: ProductImage) -> None:
+    ProductImage.objects.filter(product=product, is_primary=True).exclude(pk=image.pk).update(is_primary=False)
+    if not image.is_primary:
+        image.is_primary = True
+        image.save(update_fields=["is_primary"])
+
+
+@transaction.atomic
+def store_uploaded_product_image(
+    product: Product,
+    uploaded,
+    *,
+    alt_text: str = "",
+    is_primary: bool = False,
+    sort_order: int | None = None,
+) -> ProductImage:
+    optimized = optimize_product_image(uploaded)
+    key = build_product_image_key(product.pk, optimized.extension)
+    url = get_object_storage().upload(key, optimized.content, optimized.content_type)
+    if sort_order is None:
+        last = product.images.order_by("-sort_order").values_list("sort_order", flat=True).first()
+        sort_order = 0 if last is None else last + 1
+    make_primary = is_primary or not product.images.exists()
+    image = ProductImage(
+        product=product,
+        url=url,
+        storage_key=key,
+        alt_text=(alt_text or product.name)[:160],
+        sort_order=sort_order,
+        is_primary=False,
+    )
+    image.save()
+    if make_primary:
+        _set_primary(product, image)
+        image.refresh_from_db()
+    return image
+
+
+def delete_stored_image(image: ProductImage) -> None:
+    was_primary = image.is_primary
+    product = image.product
+    image.delete()
+    if was_primary:
+        next_image = product.images.order_by("sort_order", "id").first()
+        if next_image:
+            _set_primary(product, next_image)
+
+
+def add_remote_image_url(
+    product: Product,
+    url: str,
+    *,
+    alt_text: str = "",
+    is_primary: bool = False,
+) -> ProductImage:
+    last = product.images.order_by("-sort_order").values_list("sort_order", flat=True).first()
+    sort_order = 0 if last is None else last + 1
+    make_primary = is_primary or not product.images.exists()
+    image = ProductImage.objects.create(
+        product=product,
+        url=url.strip(),
+        alt_text=(alt_text or product.name)[:160],
+        sort_order=sort_order,
+        is_primary=False,
+    )
+    if make_primary:
+        _set_primary(product, image)
+        image.refresh_from_db()
+    return image
+
+
+def update_stored_image(
+    image: ProductImage,
+    *,
+    alt_text: str | None = None,
+    is_primary: bool | None = None,
+    sort_order: int | None = None,
+) -> ProductImage:
+    fields: list[str] = []
+    if alt_text is not None:
+        image.alt_text = alt_text[:160]
+        fields.append("alt_text")
+    if sort_order is not None:
+        image.sort_order = sort_order
+        fields.append("sort_order")
+    if fields:
+        image.save(update_fields=fields)
+    if is_primary:
+        _set_primary(image.product, image)
+        image.refresh_from_db()
+    return image
+
+
+def persist_admin_upload(instance: ProductImage, uploaded) -> None:
+    optimized = optimize_product_image(uploaded)
+    product_id = instance.product_id or instance.product.pk
+    previous = (instance.storage_key or "").strip()
+    key = build_product_image_key(product_id, optimized.extension)
+    instance.url = get_object_storage().upload(key, optimized.content, optimized.content_type)
+    instance.storage_key = key
+    instance.image = None
+    if previous and previous != key:
+        try:
+            get_object_storage().delete(previous)
+        except ObjectStorageError:
+            pass

@@ -1,0 +1,183 @@
+from decimal import Decimal
+
+from rest_framework import serializers
+
+from apps.core.models import StoreSettings
+from apps.core.pricing import break_down_price
+
+from apps.catalog.models import (
+    Brand,
+    Category,
+    Product,
+    ProductImage,
+    ProductVariant,
+    Review,
+    SubCategory,
+)
+
+
+class SubCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubCategory
+        fields = ("id", "name", "slug")
+
+
+class CategoryListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ("id", "name", "slug")
+
+
+class CategoryDetailSerializer(serializers.ModelSerializer):
+    subcategories = SubCategorySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Category
+        fields = ("id", "name", "slug", "subcategories")
+
+
+class BrandSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Brand
+        fields = ("id", "name", "slug")
+
+
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ("id", "url", "alt_text", "sort_order", "is_primary")
+
+
+class SearchProductSerializer(serializers.ModelSerializer):
+    brand = BrandSerializer(read_only=True)
+    category = CategoryListSerializer(read_only=True)
+    primary_image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Product
+        fields = ("id", "name", "slug", "sku", "price", "sale_price", "brand", "category", "primary_image")
+
+    def get_primary_image(self, obj: Product) -> dict | None:
+        image = next((img for img in obj.images.all() if img.is_primary), None)
+        if image is None:
+            image = next(iter(obj.images.all()), None)
+        if image is None:
+            return None
+        return ProductImageSerializer(image).data
+
+
+class ProductVariantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductVariant
+        fields = ("id", "name", "sku", "price", "stock_quantity")
+
+
+class ProductListSerializer(serializers.ModelSerializer):
+    brand = BrandSerializer(read_only=True)
+    category = CategoryListSerializer(read_only=True)
+    subcategory = SubCategorySerializer(read_only=True)
+    primary_image = serializers.SerializerMethodField()
+    effective_price = serializers.SerializerMethodField()
+    gst_inclusive = serializers.SerializerMethodField()
+    taxable_price = serializers.SerializerMethodField()
+    gst_amount = serializers.SerializerMethodField()
+    inclusive_price = serializers.SerializerMethodField()
+    average_rating = serializers.FloatField(read_only=True, default=0)
+    review_count = serializers.IntegerField(read_only=True, default=0)
+
+    class Meta:
+        model = Product
+        fields = (
+            "id",
+            "name",
+            "slug",
+            "sku",
+            "short_description",
+            "brand",
+            "category",
+            "subcategory",
+            "price",
+            "sale_price",
+            "effective_price",
+            "average_rating",
+            "review_count",
+            "gst_percentage",
+            "gst_inclusive",
+            "taxable_price",
+            "gst_amount",
+            "inclusive_price",
+            "stock_quantity",
+            "is_featured",
+            "is_best_seller",
+            "primary_image",
+            "created_at",
+        )
+
+    def get_primary_image(self, obj: Product) -> dict | None:
+        image = next((img for img in obj.images.all() if img.is_primary), None)
+        if image is None:
+            image = next(iter(obj.images.all()), None)
+        if image is None:
+            return None
+        return ProductImageSerializer(image).data
+
+    def get_effective_price(self, obj: Product) -> Decimal:
+        return obj.sale_price if obj.sale_price is not None else obj.price
+
+    def _gst_inclusive(self) -> bool:
+        cached = self.context.get("gst_inclusive")
+        if cached is None:
+            cached = StoreSettings.gst_inclusive()
+            self.context["gst_inclusive"] = cached
+        return bool(cached)
+
+    def _price_breakdown(self, obj: Product):
+        return break_down_price(
+            self.get_effective_price(obj),
+            obj.gst_percentage,
+            gst_inclusive=self._gst_inclusive(),
+        )
+
+    def get_gst_inclusive(self, obj: Product) -> bool:
+        return self._gst_inclusive()
+
+    def get_taxable_price(self, obj: Product) -> str:
+        return f"{self._price_breakdown(obj).taxable_price:.2f}"
+
+    def get_gst_amount(self, obj: Product) -> str:
+        return f"{self._price_breakdown(obj).gst_amount:.2f}"
+
+    def get_inclusive_price(self, obj: Product) -> str:
+        return f"{self._price_breakdown(obj).inclusive_price:.2f}"
+
+
+class ProductDetailSerializer(ProductListSerializer):
+    images = ProductImageSerializer(many=True, read_only=True)
+    variants = serializers.SerializerMethodField()
+
+    class Meta(ProductListSerializer.Meta):
+        fields = ProductListSerializer.Meta.fields + (
+            "description",
+            "images",
+            "variants",
+            "updated_at",
+        )
+
+    def get_variants(self, obj: Product) -> list:
+        variants = [item for item in obj.variants.all() if item.is_active]
+        return ProductVariantSerializer(variants, many=True).data
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    customer_name = serializers.CharField(source="customer.full_name", read_only=True)
+
+    class Meta:
+        model = Review
+        fields = ("id", "rating", "comment", "customer_name", "created_at")
+        read_only_fields = ("id", "customer_name", "created_at")
+
+
+class ReviewCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ("rating", "comment")
