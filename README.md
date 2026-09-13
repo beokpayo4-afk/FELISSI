@@ -82,4 +82,4 @@ See `frontend/.env.example` and `backend/.env.example`. Do not commit real secre
   - Set `DJANGO_SETTINGS_MODULE=config.settings.production`.
   - The process must bind `0.0.0.0:$PORT` (handled by `gunicorn.conf.py`). Do not use `uvicorn ... --host 127.0.0.1`.
 - Database → Render PostgreSQL. Set `DATABASE_URL`.
-- Images → S3-compatible object storage (Cloudflare R2, AWS S3, or MinIO). Set `OBJECT_STORAGE_ENDPOINT_URL`, `OBJECT_STORAGE_ACCESS_KEY_ID`, `OBJECT_STORAGE_SECRET_ACCESS_KEY`, `OBJECT_STORAGE_BUCKET_NAME`, and `OBJECT_STORAGE_PUBLIC_BASE_URL`. Do not store uploaded product images on the Render disk. `R2_*` remains a fallback alias.
+- Images → S3-compatible object storage (Cloudflare R2, AWS S3, or MinIO). Set `OBJECT_STORAGE_ENDPOINT_URL`, `OBJECT_STORAGE_ACCESS_KEY_ID`, `OBJECT_STORAGE_SECRET_ACCESS_KEY`, `OBJECT_STORAGE_BUCKET_NAME`, and `OBJECT_STORAGE_PUBLIC_BASE_URL` in the Render Environment tab (or matching `R2_*` aliases). Product uploads go through `apps.core.object_storage.S3CompatibleStorage` (boto3); PostgreSQL stores the public URL + `storage_key`. Do not store uploaded product images on the Render disk.

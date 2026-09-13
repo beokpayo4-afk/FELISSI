@@ -181,15 +181,20 @@ CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS")
 CORS_ALLOW_CREDENTIALS = False
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS")
 
-# S3-compatible object storage for product images. Prefer OBJECT_STORAGE_*; R2_* still works.
-OBJECT_STORAGE_ENDPOINT_URL = env("OBJECT_STORAGE_ENDPOINT_URL", default="") or env("R2_ENDPOINT_URL", default="")
+# S3-compatible object storage for product images (Cloudflare R2, AWS S3, MinIO).
+# Prefer OBJECT_STORAGE_*; R2_* remains a fallback alias.
+OBJECT_STORAGE_ENDPOINT_URL = env("OBJECT_STORAGE_ENDPOINT_URL", default="") or env(
+    "R2_ENDPOINT_URL", default=""
+)
 OBJECT_STORAGE_ACCESS_KEY_ID = env("OBJECT_STORAGE_ACCESS_KEY_ID", default="") or env(
     "R2_ACCESS_KEY_ID", default=""
 )
 OBJECT_STORAGE_SECRET_ACCESS_KEY = env("OBJECT_STORAGE_SECRET_ACCESS_KEY", default="") or env(
     "R2_SECRET_ACCESS_KEY", default=""
 )
-OBJECT_STORAGE_BUCKET_NAME = env("OBJECT_STORAGE_BUCKET_NAME", default="") or env("R2_BUCKET_NAME", default="")
+OBJECT_STORAGE_BUCKET_NAME = env("OBJECT_STORAGE_BUCKET_NAME", default="") or env(
+    "R2_BUCKET_NAME", default=""
+)
 OBJECT_STORAGE_PUBLIC_BASE_URL = env("OBJECT_STORAGE_PUBLIC_BASE_URL", default="") or env(
     "R2_PUBLIC_BASE_URL", default=""
 )
@@ -197,16 +202,27 @@ OBJECT_STORAGE_REGION = env("OBJECT_STORAGE_REGION", default="auto")
 OBJECT_STORAGE_BACKEND = env("OBJECT_STORAGE_BACKEND", default="")
 R2_ACCOUNT_ID = env("R2_ACCOUNT_ID", default="")
 
+# Cloudflare R2: derive the S3 API endpoint from the account id when not set explicitly.
+if not OBJECT_STORAGE_ENDPOINT_URL and R2_ACCOUNT_ID:
+    OBJECT_STORAGE_ENDPOINT_URL = f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+
 # Payment gateway — leave keys empty. Never put live credentials in the repo.
 PAYMENT_PROVIDER = env("PAYMENT_PROVIDER", default="razorpay")
 PAYMENT_KEY_ID = env("PAYMENT_KEY_ID", default="")
 PAYMENT_KEY_SECRET = env("PAYMENT_KEY_SECRET", default="")
 
 API_PUBLIC_ORIGIN = env("API_PUBLIC_ORIGIN", default="http://127.0.0.1:8000")
-FRONTEND_ORIGIN = env("FRONTEND_ORIGIN", default="http://127.0.0.1:5175")
+FRONTEND_ORIGIN = env("FRONTEND_ORIGIN", default="http://127.0.0.1:5175").rstrip("/")
 FRONTEND_APP_NAME = env("FRONTEND_APP_NAME", default="VoltCart")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="filessipvtltd@gmail.com")
 EMAIL_BACKEND = env(
     "EMAIL_BACKEND",
     default="django.core.mail.backends.console.EmailBackend",
 )
+
+# Keep CORS/CSRF aligned with FRONTEND_ORIGIN when it is a full http(s) origin.
+if FRONTEND_ORIGIN.startswith(("http://", "https://")):
+    if FRONTEND_ORIGIN not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(FRONTEND_ORIGIN)
+    if FRONTEND_ORIGIN not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(FRONTEND_ORIGIN)
