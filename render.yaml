@@ -7,8 +7,12 @@
 # Render's default disk is ephemeral — files are lost on redeploy unless you
 # attach a persistent disk mounted at the uploads directory.
 #
-# This service uses Neon PostgreSQL. Set DATABASE_URL manually in the dashboard
-# (do not leave it empty). Object storage (R2/S3/MinIO) is not used.
+# IMPORTANT — do not put the gunicorn start command in Build Command.
+# Build installs deps; Start runs the server. Mixing them causes:
+#   bash: gunicorn: command not found
+#
+# Build:  pip install -r requirements.txt && python manage.py migrate --noinput && python manage.py collectstatic --noinput
+# Start:  gunicorn config.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
 
 services:
   - type: web
@@ -16,7 +20,7 @@ services:
     runtime: python
     rootDir: backend
     buildCommand: pip install -r requirements.txt && python manage.py migrate --noinput && python manage.py collectstatic --noinput
-    startCommand: gunicorn main:app -c gunicorn.conf.py
+    startCommand: gunicorn config.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings.production
