@@ -85,12 +85,13 @@ Object-storage variables (`OBJECT_STORAGE_*`, `R2_*`) are **not** required and a
 ## Deployment
 
 - Frontend → Vercel. Set `VITE_API_BASE_URL` to the public Render API origin + `/api`.
-- Backend → Render web service. Root directory: `backend`.
-  - Build command: `pip install -r requirements.txt && python manage.py collectstatic --noinput`
-  - Start command: `gunicorn main:app -c gunicorn.conf.py`
+- Backend → Render web service. **Root Directory:** `backend`.
+  - **Build command:** `pip install -r requirements.txt && python manage.py migrate --noinput && python manage.py collectstatic --noinput`
+  - **Start command:** `gunicorn main:app -c gunicorn.conf.py`
   - Set `DJANGO_SETTINGS_MODULE=config.settings.production`.
-  - The process must bind `0.0.0.0:$PORT` (handled by `gunicorn.conf.py`). Do not use `uvicorn ... --host 127.0.0.1`.
-- Database → Render PostgreSQL. Set `DATABASE_URL`.
+  - Set `PYTHON_VERSION=3.12.8` (or rely on `backend/runtime.txt`). Do not use Python 3.14 — Django/psycopg pins here target 3.12.
+  - The process must bind `0.0.0.0:$PORT` (handled by `gunicorn.conf.py`).
+- Database → **Neon PostgreSQL**. Set `DATABASE_URL` in the Render Environment tab to your Neon connection string. Do not leave it empty.
 - Images → local filesystem under `uploads/`, served at `/uploads/...`.
   - **Limitation:** Render’s default disk is ephemeral. Uploaded files disappear on redeploy/restart unless you attach a [persistent disk](https://render.com/docs/disks) mounted at the uploads directory.
-  - Set `CORS_ALLOWED_ORIGINS` / `FRONTEND_ORIGIN` to your Vercel origin so the browser can load API responses (and any credentialed fetches) from the frontend.
+  - Set `CORS_ALLOWED_ORIGINS` / `FRONTEND_ORIGIN` / `CSRF_TRUSTED_ORIGINS` to your Vercel origin (`https://...`).

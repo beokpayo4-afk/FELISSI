@@ -1,16 +1,21 @@
 # Render Blueprint — documents required env vars. Do not put real secrets here.
 # https://render.com/docs/blueprint-spec
 #
-# Uploaded images are stored on the service filesystem under uploads/.
-# Free/ephemeral disks lose files on redeploy — attach a persistent disk to
-# /opt/render/project/src/backend/uploads (or set UPLOADS_ROOT) for durability.
+# Root Directory on Render must be: backend
+#
+# Uploaded images live under uploads/ and are served at /uploads/.
+# Render's default disk is ephemeral — files are lost on redeploy unless you
+# attach a persistent disk mounted at the uploads directory.
+#
+# This service uses Neon PostgreSQL. Set DATABASE_URL manually in the dashboard
+# (do not leave it empty). Object storage (R2/S3/MinIO) is not used.
 
 services:
   - type: web
     name: felissi-api
     runtime: python
     rootDir: backend
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    buildCommand: pip install -r requirements.txt && python manage.py migrate --noinput && python manage.py collectstatic --noinput
     startCommand: gunicorn main:app -c gunicorn.conf.py
     envVars:
       - key: DJANGO_SETTINGS_MODULE
@@ -29,17 +34,16 @@ services:
         value: felissi-1.onrender.com
       - key: API_PUBLIC_ORIGIN
         value: https://felissi-1.onrender.com
+      - key: DATABASE_SSL_REQUIRE
+        value: "true"
+      # Required — paste Neon connection string in the Render dashboard.
       - key: DATABASE_URL
-        fromDatabase:
-          name: felissi-db
-          property: connectionString
+        sync: false
       - key: FRONTEND_ORIGIN
         sync: false
       - key: CORS_ALLOWED_ORIGINS
         sync: false
       - key: CSRF_TRUSTED_ORIGINS
         sync: false
-
-databases:
-  - name: felissi-db
-    plan: free
+      - key: UPLOAD_STORAGE_BACKEND
+        value: ""

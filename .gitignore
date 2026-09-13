@@ -10,9 +10,11 @@ __pycache__/
 
 # Environment and secrets
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 backend/.env
+backend/.env.*
+!backend/.env.example
 
 # Build and cache
 dist/

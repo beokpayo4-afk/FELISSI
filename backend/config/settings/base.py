@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import dj_database_url
@@ -28,6 +29,25 @@ def _csv_hosts(*candidates: str) -> list[str]:
     return ["localhost", "127.0.0.1"]
 
 
+def _csv_origins(*candidates: str, default: list[str] | None = None) -> list[str]:
+    """Read comma-separated origins; drop blanks; keep only http(s) URLs."""
+    for name in candidates:
+        raw = env.str(name, default="").strip()
+        if not raw:
+            continue
+        origins: list[str] = []
+        for item in raw.split(","):
+            origin = item.strip().rstrip("/")
+            if not origin:
+                continue
+            if origin.startswith(("http://", "https://")):
+                origins.append(origin)
+            # Ignore bare hostnames — CSRF/CORS require a scheme.
+        if origins:
+            return origins
+    return list(default or [])
+
+
 def _env_bool(*candidates: str, default: bool = False) -> bool:
     for name in candidates:
         raw = env.str(name, default="")
@@ -35,6 +55,11 @@ def _env_bool(*candidates: str, default: bool = False) -> bool:
             continue
         return raw.strip().lower() in ("true", "1", "yes", "on")
     return default
+
+
+def _using_production_settings() -> bool:
+    module = (os.environ.get("DJANGO_SETTINGS_MODULE") or "").strip()
+    return bool(os.environ.get("RENDER")) or module.endswith(".production") or module.endswith("production")
 
 
 SECRET_KEY = env.str("DJANGO_SECRET_KEY", default="") or env.str("SECRET_KEY", default="")
@@ -100,16 +125,30 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
-DATABASE_URL = env("DATABASE_URL", default="")
+# Never pass an empty / whitespace DATABASE_URL into dj_database_url (it raises
+# ValueError: No support for ''). Production refuses SQLite entirely.
+DATABASE_URL = (env.str("DATABASE_URL", default="") or "").strip()
 if DATABASE_URL:
     neon_or_ssl = "neon.tech" in DATABASE_URL or "sslmode=require" in DATABASE_URL
-    DATABASES = {
-        "default": dj_database_url.parse(
-            DATABASE_URL,
-            conn_max_age=600,
-            ssl_require=env.bool("DATABASE_SSL_REQUIRE", default=neon_or_ssl),
-        )
-    }
+    try:
+        DATABASES = {
+            "default": dj_database_url.parse(
+                DATABASE_URL,
+                conn_max_age=600,
+                ssl_require=_env_bool("DATABASE_SSL_REQUIRE", default=neon_or_ssl),
+            )
+        }
+    except ValueError as exc:
+        raise ValueError(
+            "DATABASE_URL is invalid. Use a full PostgreSQL URL such as "
+            "postgresql://USER:PASSWORD@HOST/DBNAME?sslmode=require"
+        ) from exc
+elif _using_production_settings():
+    raise ValueError(
+        "DATABASE_URL must be set in production. "
+        "Add your Neon (or other PostgreSQL) connection string in the Render "
+        "Environment tab. Do not leave DATABASE_URL empty."
+    )
 else:
     DATABASES = {
         "default": {
@@ -134,6 +173,7 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Local filesystem uploads (served at /uploads/...).
+# On Render the disk is ephemeral unless a persistent disk is attached.
 UPLOADS_ROOT = BASE_DIR / "uploads"
 UPLOAD_SUBDIRS = ("products", "categories", "banners")
 MEDIA_URL = "/uploads/"
@@ -187,11 +227,17 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
-CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS")
+CORS_ALLOWED_ORIGINS = _csv_origins(
+    "CORS_ALLOWED_ORIGINS",
+    default=["http://localhost:5173"],
+)
 CORS_ALLOW_CREDENTIALS = False
 CORS_ALLOW_METHODS = ["DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT", "HEAD"]
 CORS_EXPOSE_HEADERS = ["Content-Type", "Content-Length"]
-CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS")
+CSRF_TRUSTED_ORIGINS = _csv_origins(
+    "CSRF_TRUSTED_ORIGINS",
+    default=["http://localhost:5173"],
+)
 
 # Payment gateway — leave keys empty. Never put live credentials in the repo.
 PAYMENT_PROVIDER = env("PAYMENT_PROVIDER", default="razorpay")
