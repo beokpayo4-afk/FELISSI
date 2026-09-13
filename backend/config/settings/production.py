@@ -1,5 +1,6 @@
 from .base import *  # noqa: F403
 from .base import (
+    ALLOWED_HOSTS,
     DATABASES,
     OBJECT_STORAGE_ACCESS_KEY_ID,
     OBJECT_STORAGE_BUCKET_NAME,
@@ -11,10 +12,11 @@ from .base import (
     env,
 )
 
+# Never expose Django's debug traceback page in production.
 DEBUG = False
 
-if not SECRET_KEY or SECRET_KEY.startswith("replace-with"):
-    raise ValueError("DJANGO_SECRET_KEY must be set to a real secret in production.")
+if not SECRET_KEY or str(SECRET_KEY).startswith("replace-with"):
+    raise ValueError("DJANGO_SECRET_KEY (or SECRET_KEY) must be set to a real secret in production.")
 
 if DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
     raise ValueError("Production must use PostgreSQL via DATABASE_URL.")
@@ -48,6 +50,7 @@ SECURE_HSTS_PRELOAD = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 
-render_host = env("RENDER_EXTERNAL_HOSTNAME", default="")
-if render_host and render_host not in ALLOWED_HOSTS:  # noqa: F405
-    ALLOWED_HOSTS.append(render_host)  # noqa: F405
+# Defense in depth: ensure the Render service hostname is always permitted.
+render_host = env.str("RENDER_EXTERNAL_HOSTNAME", default="").strip()
+if render_host and render_host not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(render_host)

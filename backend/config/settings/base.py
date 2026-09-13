@@ -7,7 +7,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 env = environ.Env(
     DJANGO_DEBUG=(bool, False),
+    DEBUG=(bool, False),
     DJANGO_ALLOWED_HOSTS=(list, ["localhost", "127.0.0.1"]),
+    ALLOWED_HOSTS=(list, ["localhost", "127.0.0.1"]),
     CORS_ALLOWED_ORIGINS=(list, ["http://localhost:5173"]),
     CSRF_TRUSTED_ORIGINS=(list, ["http://localhost:5173"]),
     DJANGO_SECURE_SSL_REDIRECT=(bool, False),
@@ -15,9 +17,36 @@ env = environ.Env(
 
 environ.Env.read_env(BASE_DIR / ".env", overwrite=False)
 
-SECRET_KEY = env("DJANGO_SECRET_KEY")
-DEBUG = env("DJANGO_DEBUG")
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
+
+def _csv_hosts(*candidates: str) -> list[str]:
+    """Read the first non-empty comma-separated host list from the environment."""
+    for name in candidates:
+        raw = env.str(name, default="").strip()
+        if not raw:
+            continue
+        return [host.strip() for host in raw.split(",") if host.strip()]
+    return ["localhost", "127.0.0.1"]
+
+
+def _env_bool(*candidates: str, default: bool = False) -> bool:
+    for name in candidates:
+        raw = env.str(name, default="")
+        if raw == "":
+            continue
+        return raw.strip().lower() in ("true", "1", "yes", "on")
+    return default
+
+
+SECRET_KEY = env.str("DJANGO_SECRET_KEY", default="") or env.str("SECRET_KEY", default="")
+
+# Prefer DJANGO_* names; also accept ALLOWED_HOSTS / DEBUG for Render dashboards.
+ALLOWED_HOSTS = _csv_hosts("DJANGO_ALLOWED_HOSTS", "ALLOWED_HOSTS")
+DEBUG = _env_bool("DJANGO_DEBUG", "DEBUG", default=False)
+
+# Render injects this automatically — keep the service hostname allowed.
+_render_host = env.str("RENDER_EXTERNAL_HOSTNAME", default="").strip()
+if _render_host and _render_host not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(_render_host)
 
 INSTALLED_APPS = [
     "django.contrib.admin",

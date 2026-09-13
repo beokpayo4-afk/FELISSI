@@ -6,23 +6,22 @@ import os
 
 
 def configure_settings_module() -> str:
-    """Pick settings when DJANGO_SETTINGS_MODULE is unset.
+    """Select the Django settings module for local vs Render.
 
-    Render sets RENDER=true during build and runtime. Without an explicit
-    settings module, prefer production there so collectstatic/migrate match
-    the web process.
+    On Render, always use production settings so DEBUG stays False and
+    production ALLOWED_HOSTS / security middleware apply — even if a local
+    .env copied into the build tree still points at development.
     """
+    if os.environ.get("RENDER"):
+        os.environ["DJANGO_SETTINGS_MODULE"] = "config.settings.production"
+        return os.environ["DJANGO_SETTINGS_MODULE"]
+
     existing = os.environ.get("DJANGO_SETTINGS_MODULE")
     if existing:
         return existing
 
-    module = (
-        "config.settings.production"
-        if os.environ.get("RENDER")
-        else "config.settings.development"
-    )
-    os.environ["DJANGO_SETTINGS_MODULE"] = module
-    return module
+    os.environ["DJANGO_SETTINGS_MODULE"] = "config.settings.development"
+    return os.environ["DJANGO_SETTINGS_MODULE"]
 
 
 def env_int(name: str, default: int, *, minimum: int = 1) -> int:

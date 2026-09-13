@@ -3,14 +3,10 @@
 This project is Django, not FastAPI. `app` is the Django ASGI application.
 """
 
-import os
-
+from config.django_env import configure_settings_module
 from django.core.asgi import get_asgi_application
 
-if not os.environ.get("DJANGO_SETTINGS_MODULE"):
-    os.environ["DJANGO_SETTINGS_MODULE"] = (
-        "config.settings.production" if os.environ.get("RENDER") else "config.settings.development"
-    )
+configure_settings_module()
 
 django_application = get_asgi_application()
 
