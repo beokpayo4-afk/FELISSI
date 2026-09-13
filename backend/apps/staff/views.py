@@ -67,6 +67,7 @@ class StaffOptionsView(APIView):
 
 class StaffProductViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, IsStoreStaff]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     filterset_class = StaffProductFilter
     search_fields = ("name", "sku", "brand__name", "category__name")
     ordering_fields = ("created_at", "name", "price", "stock_quantity")

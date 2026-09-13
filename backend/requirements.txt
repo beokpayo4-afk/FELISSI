@@ -10,4 +10,3 @@ uvicorn[standard]>=0.32,<1
 whitenoise>=6.8,<7
 django-filter>=24.3,<26
 drf-spectacular>=0.28,<1
-boto3>=1.35,<2

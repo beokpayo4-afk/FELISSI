@@ -1,3 +1,4 @@
+import { resolveMediaUrl } from "@/lib/env";
 import type { ApiProduct, CatalogProduct } from "@/types/catalog";
 
 export function toNumber(value: string | number | null | undefined): number {
@@ -14,7 +15,7 @@ export function toCatalogProduct(product: ApiProduct): CatalogProduct {
     id: product.id,
     slug: product.slug,
     name: product.name,
-    image: product.primary_image?.url || "/placeholders/product.svg",
+    image: resolveMediaUrl(product.primary_image?.url) || "/placeholders/product.svg",
     imageAlt: product.primary_image?.alt_text || product.name,
     price: toNumber(product.price),
     salePrice: sale && sale > 0 ? sale : undefined,

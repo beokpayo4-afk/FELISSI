@@ -174,11 +174,11 @@ class Product(TimeStampedModel):
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
-    image = models.ImageField("upload", upload_to="products/%Y/%m/", blank=True)
+    image = models.ImageField("upload", upload_to="products/", blank=True)
     url = models.CharField(
         max_length=500,
         blank=True,
-        help_text="Public object-storage URL stored in PostgreSQL.",
+        help_text="Public path for the image, e.g. /uploads/products/<filename>.",
     )
     storage_key = models.CharField(max_length=255, blank=True)
     alt_text = models.CharField(max_length=160, blank=True)

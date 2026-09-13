@@ -32,6 +32,9 @@ htmlcov/
 
 # Media / local uploads
 backend/media/
+backend/uploads/**
+!backend/uploads/**/
+!backend/uploads/**/.gitkeep
 backend/staticfiles/
 
 # IDE and OS

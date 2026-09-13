@@ -132,8 +132,15 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-MEDIA_URL = "media/"
-MEDIA_ROOT = BASE_DIR / "media"
+
+# Local filesystem uploads (served at /uploads/...).
+UPLOADS_ROOT = BASE_DIR / "uploads"
+UPLOAD_SUBDIRS = ("products", "categories", "banners")
+MEDIA_URL = "/uploads/"
+MEDIA_ROOT = UPLOADS_ROOT
+UPLOAD_STORAGE_BACKEND = env("UPLOAD_STORAGE_BACKEND", default="")
+FILE_UPLOAD_MAX_MEMORY_SIZE = 8 * 1024 * 1024
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 
 STORAGES = {
     "default": {
@@ -172,39 +179,19 @@ REST_FRAMEWORK = {
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "VoltCart API",
-    "DESCRIPTION": "Electronics storefront API operated by FELISSI PRIVATE LIMITED. Product images are served as object-storage URLs.",
+    "DESCRIPTION": (
+        "Electronics storefront API operated by FELISSI PRIVATE LIMITED. "
+        "Product images are stored on the local filesystem and served at /uploads/."
+    ),
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS")
 CORS_ALLOW_CREDENTIALS = False
+CORS_ALLOW_METHODS = ["DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT", "HEAD"]
+CORS_EXPOSE_HEADERS = ["Content-Type", "Content-Length"]
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS")
-
-# S3-compatible object storage for product images (Cloudflare R2, AWS S3, MinIO).
-# Prefer OBJECT_STORAGE_*; R2_* remains a fallback alias.
-OBJECT_STORAGE_ENDPOINT_URL = env("OBJECT_STORAGE_ENDPOINT_URL", default="") or env(
-    "R2_ENDPOINT_URL", default=""
-)
-OBJECT_STORAGE_ACCESS_KEY_ID = env("OBJECT_STORAGE_ACCESS_KEY_ID", default="") or env(
-    "R2_ACCESS_KEY_ID", default=""
-)
-OBJECT_STORAGE_SECRET_ACCESS_KEY = env("OBJECT_STORAGE_SECRET_ACCESS_KEY", default="") or env(
-    "R2_SECRET_ACCESS_KEY", default=""
-)
-OBJECT_STORAGE_BUCKET_NAME = env("OBJECT_STORAGE_BUCKET_NAME", default="") or env(
-    "R2_BUCKET_NAME", default=""
-)
-OBJECT_STORAGE_PUBLIC_BASE_URL = env("OBJECT_STORAGE_PUBLIC_BASE_URL", default="") or env(
-    "R2_PUBLIC_BASE_URL", default=""
-)
-OBJECT_STORAGE_REGION = env("OBJECT_STORAGE_REGION", default="auto")
-OBJECT_STORAGE_BACKEND = env("OBJECT_STORAGE_BACKEND", default="")
-R2_ACCOUNT_ID = env("R2_ACCOUNT_ID", default="")
-
-# Cloudflare R2: derive the S3 API endpoint from the account id when not set explicitly.
-if not OBJECT_STORAGE_ENDPOINT_URL and R2_ACCOUNT_ID:
-    OBJECT_STORAGE_ENDPOINT_URL = f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
 
 # Payment gateway — leave keys empty. Never put live credentials in the repo.
 PAYMENT_PROVIDER = env("PAYMENT_PROVIDER", default="razorpay")

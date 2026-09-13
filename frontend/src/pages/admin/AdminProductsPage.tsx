@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { getApiErrorMessage } from "@/api/errors";
 import { deleteStaffProduct, fetchStaffOptions, listStaffProducts, patchStaffProduct } from "@/api/staff";
 import { toNumber } from "@/lib/catalog";
+import { resolveMediaUrl } from "@/lib/env";
 import { formatInr } from "@/lib/money";
 import type { StaffOptions, StaffProduct, StaffProductQuery } from "@/types/staff";
 
@@ -431,7 +432,7 @@ function FilterSelect({
 }
 
 function ProductThumb({ product }: { product: StaffProduct }) {
-  const src = product.primary_image?.url;
+  const src = resolveMediaUrl(product.primary_image?.url);
   if (!src) {
     return (
       <div className="flex size-11 items-center justify-center rounded-lg bg-slate-100 text-[10px] leading-tight text-slate-400">

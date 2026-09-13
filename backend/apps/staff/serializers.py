@@ -92,6 +92,7 @@ class StaffProductImageUpdateSerializer(serializers.Serializer):
 
 
 class StaffProductWriteSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(required=False, write_only=True)
     image_url = serializers.CharField(required=False, allow_blank=True, write_only=True)
 
     class Meta:
@@ -111,6 +112,7 @@ class StaffProductWriteSerializer(serializers.ModelSerializer):
             "is_published",
             "is_featured",
             "is_best_seller",
+            "image",
             "image_url",
         )
 
@@ -124,6 +126,7 @@ class StaffProductWriteSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
+        uploaded = validated_data.pop("image", None)
         image_url = (validated_data.pop("image_url", "") or "").strip()
         name = validated_data["name"]
         base = slugify(name) or "product"
@@ -133,7 +136,11 @@ class StaffProductWriteSerializer(serializers.ModelSerializer):
             slug = f"{base}-{suffix}"
             suffix += 1
         product = Product.objects.create(slug=slug, **validated_data)
-        if image_url:
+        if uploaded:
+            from apps.catalog.image_service import store_uploaded_product_image
+
+            store_uploaded_product_image(product, uploaded, alt_text=product.name, is_primary=True)
+        elif image_url:
             ProductImage.objects.create(
                 product=product,
                 url=image_url,
@@ -143,9 +150,14 @@ class StaffProductWriteSerializer(serializers.ModelSerializer):
         return product
 
     def update(self, instance, validated_data):
+        uploaded = validated_data.pop("image", None)
         image_url = validated_data.pop("image_url", None)
         product = super().update(instance, validated_data)
-        if image_url is not None:
+        if uploaded is not None:
+            from apps.catalog.image_service import store_uploaded_product_image
+
+            store_uploaded_product_image(product, uploaded, alt_text=product.name, is_primary=True)
+        elif image_url is not None:
             url = image_url.strip()
             if url:
                 primary = product.images.filter(is_primary=True).first() or product.images.first()

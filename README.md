@@ -12,7 +12,7 @@ eCommerce/
 
 - Frontend talks to the API through `VITE_API_BASE_URL`. Never hard-code hostnames.
 - Backend settings are split: `base`, `development`, `production`.
-- Product images go Browser → Frontend → Django API → S3-compatible object storage. PostgreSQL stores the public image URL, not the file.
+- Product images go Browser → Frontend → Django API → local `uploads/` folder. PostgreSQL stores the public path (e.g. `/uploads/products/<file>.webp`).
 
 ## Prerequisites
 
@@ -62,16 +62,25 @@ Authenticated routes expect `Authorization: Token <token>`.
 ## Product images
 
 ```text
-Browser → Frontend → Django API → Object storage → Public image URL → PostgreSQL
+Browser → Frontend → Django API → uploads/products/ → /uploads/products/<filename>
 ```
 
-Uploads are resized, converted to WebP, and stored in S3-compatible object storage. The API saves only the public URL (and storage key) in PostgreSQL. Production refuses to start without object-storage credentials so files are not left on the Render filesystem.
+Uploads are validated (JPEG/PNG/WebP, max 8 MB), resized, converted to WebP, and saved under `backend/uploads/products/` with unique filenames. The API returns paths like `/uploads/products/<uuid>.webp`. Django serves those files in every environment.
 
-Local development can omit those variables and write to `MEDIA_ROOT` instead.
+Folder layout:
+
+```text
+uploads/
+  products/
+  categories/
+  banners/
+```
 
 ## Environment variables
 
 See `frontend/.env.example` and `backend/.env.example`. Do not commit real secrets or production credentials.
+
+Object-storage variables (`OBJECT_STORAGE_*`, `R2_*`) are **not** required and are unused.
 
 ## Deployment
 
@@ -82,4 +91,6 @@ See `frontend/.env.example` and `backend/.env.example`. Do not commit real secre
   - Set `DJANGO_SETTINGS_MODULE=config.settings.production`.
   - The process must bind `0.0.0.0:$PORT` (handled by `gunicorn.conf.py`). Do not use `uvicorn ... --host 127.0.0.1`.
 - Database → Render PostgreSQL. Set `DATABASE_URL`.
-- Images → S3-compatible object storage (Cloudflare R2, AWS S3, or MinIO). Set `OBJECT_STORAGE_ENDPOINT_URL`, `OBJECT_STORAGE_ACCESS_KEY_ID`, `OBJECT_STORAGE_SECRET_ACCESS_KEY`, `OBJECT_STORAGE_BUCKET_NAME`, and `OBJECT_STORAGE_PUBLIC_BASE_URL` in the Render Environment tab (or matching `R2_*` aliases). Product uploads go through `apps.core.object_storage.S3CompatibleStorage` (boto3); PostgreSQL stores the public URL + `storage_key`. Do not store uploaded product images on the Render disk.
+- Images → local filesystem under `uploads/`, served at `/uploads/...`.
+  - **Limitation:** Render’s default disk is ephemeral. Uploaded files disappear on redeploy/restart unless you attach a [persistent disk](https://render.com/docs/disks) mounted at the uploads directory.
+  - Set `CORS_ALLOWED_ORIGINS` / `FRONTEND_ORIGIN` to your Vercel origin so the browser can load API responses (and any credentialed fetches) from the frontend.

@@ -6,6 +6,7 @@ import {
   uploadStaffProductImage,
 } from "@/api/staff";
 import { getApiErrorMessage } from "@/api/errors";
+import { resolveMediaUrl } from "@/lib/env";
 import type { StaffProductImage } from "@/types/staff";
 
 type ProductImageGalleryProps = {
@@ -110,7 +111,11 @@ export function ProductImageGallery({ productId, images, onChange }: ProductImag
         <ul className="grid gap-3 sm:grid-cols-3">
           {images.map((image) => (
             <li key={image.id} className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
-              <img src={image.url} alt={image.alt_text || "Product image"} className="h-32 w-full object-cover" />
+              <img
+                src={resolveMediaUrl(image.url)}
+                alt={image.alt_text || "Product image"}
+                className="h-32 w-full object-cover"
+              />
               <div className="flex flex-wrap items-center gap-2 p-2 text-xs">
                 {image.is_primary ? (
                   <span className="rounded-full bg-sky-100 px-2 py-0.5 font-medium text-sky-800">Primary</span>

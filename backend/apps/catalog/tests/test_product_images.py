@@ -59,7 +59,7 @@ class ProductImageStorageTests(APITestCase):
         )
         self.assertEqual(first.status_code, 201, first.data)
         self.assertTrue(first.data["is_primary"])
-        self.assertTrue(first.data["url"].startswith("https://images.voltcart.test/products/"))
+        self.assertTrue(first.data["url"].startswith("/uploads/products/"))
         self.assertTrue(first.data["url"].endswith(".webp"))
 
         second = self.client.post(

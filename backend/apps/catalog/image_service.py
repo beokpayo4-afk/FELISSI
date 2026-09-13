@@ -9,8 +9,10 @@ from apps.catalog.models import Product, ProductImage
 from apps.core.object_storage import ObjectStorageError, get_object_storage
 
 
-def build_product_image_key(product_id, extension: str = "webp") -> str:
-    return f"products/{product_id}/{uuid.uuid4().hex}.{extension}"
+def build_product_image_key(extension: str = "webp") -> str:
+    """Flat unique key under uploads/products/."""
+    safe_ext = (extension or "webp").lower().lstrip(".")
+    return f"products/{uuid.uuid4().hex}.{safe_ext}"
 
 
 def _set_primary(product: Product, image: ProductImage) -> None:
@@ -30,7 +32,7 @@ def store_uploaded_product_image(
     sort_order: int | None = None,
 ) -> ProductImage:
     optimized = optimize_product_image(uploaded)
-    key = build_product_image_key(product.pk, optimized.extension)
+    key = build_product_image_key(optimized.extension)
     url = get_object_storage().upload(key, optimized.content, optimized.content_type)
     if sort_order is None:
         last = product.images.order_by("-sort_order").values_list("sort_order", flat=True).first()
@@ -108,9 +110,8 @@ def update_stored_image(
 
 def persist_admin_upload(instance: ProductImage, uploaded) -> None:
     optimized = optimize_product_image(uploaded)
-    product_id = instance.product_id or instance.product.pk
     previous = (instance.storage_key or "").strip()
-    key = build_product_image_key(product_id, optimized.extension)
+    key = build_product_image_key(optimized.extension)
     instance.url = get_object_storage().upload(key, optimized.content, optimized.content_type)
     instance.storage_key = key
     instance.image = None

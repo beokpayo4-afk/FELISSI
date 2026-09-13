@@ -1,3 +1,4 @@
+import { resolveMediaUrl } from "@/lib/env";
 import { cn } from "@/lib/utils";
 
 export function ProductImage({
@@ -11,9 +12,10 @@ export function ProductImage({
   className?: string;
   priority?: boolean;
 }) {
+  const resolved = resolveMediaUrl(src) || "/placeholders/product.svg";
   return (
     <img
-      src={src}
+      src={resolved}
       alt={alt}
       loading={priority ? "eager" : "lazy"}
       decoding="async"

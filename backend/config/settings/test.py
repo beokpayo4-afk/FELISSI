@@ -16,6 +16,6 @@ PASSWORD_HASHERS = [
 
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 FRONTEND_ORIGIN = "http://testserver"
-OBJECT_STORAGE_BACKEND = "memory"
+UPLOAD_STORAGE_BACKEND = "memory"
 
 SILENCED_SYSTEM_CHECKS = ["models.W047"]

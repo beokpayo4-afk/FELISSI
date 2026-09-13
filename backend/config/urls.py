@@ -1,7 +1,7 @@
 from django.conf import settings
-from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
+from django.views.static import serve
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 admin.site.site_header = "VoltCart"
@@ -17,5 +17,13 @@ urlpatterns = [
     path("api/v1/", include("config.api_urls")),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Serve local uploads in development and on Render (WhiteNoise does not serve MEDIA).
+# Paths are constrained under MEDIA_ROOT by django.views.static.serve.
+urlpatterns += [
+    re_path(
+        r"^uploads/(?P<path>.*)$",
+        serve,
+        {"document_root": settings.MEDIA_ROOT},
+        name="uploaded-files",
+    ),
+]

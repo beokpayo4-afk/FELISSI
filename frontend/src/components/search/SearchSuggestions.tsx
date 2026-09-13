@@ -1,5 +1,6 @@
 import { formatInr } from "@/lib/money";
 import { toNumber } from "@/lib/catalog";
+import { resolveMediaUrl } from "@/lib/env";
 import type { SearchSuggestions } from "@/types/catalog";
 
 export function SearchSuggestionsPanel({
@@ -72,7 +73,7 @@ export function suggestionItems(suggestions: SearchSuggestions) {
     slug: product.slug,
     name: product.name,
     meta: `${product.brand.name} · ${product.sku} · ${formatInr(toNumber(product.sale_price ?? product.price))}`,
-    image: product.primary_image?.url || "/placeholders/product.svg",
+    image: resolveMediaUrl(product.primary_image?.url) || "/placeholders/product.svg",
   }));
   const brands = suggestions.brands.map((brand) => ({
     kind: "brand" as const,

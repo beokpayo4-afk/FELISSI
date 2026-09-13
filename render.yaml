@@ -1,5 +1,9 @@
 # Render Blueprint — documents required env vars. Do not put real secrets here.
 # https://render.com/docs/blueprint-spec
+#
+# Uploaded images are stored on the service filesystem under uploads/.
+# Free/ephemeral disks lose files on redeploy — attach a persistent disk to
+# /opt/render/project/src/backend/uploads (or set UPLOADS_ROOT) for durability.
 
 services:
   - type: web
@@ -35,18 +39,6 @@ services:
         sync: false
       - key: CSRF_TRUSTED_ORIGINS
         sync: false
-      - key: OBJECT_STORAGE_ENDPOINT_URL
-        sync: false
-      - key: OBJECT_STORAGE_ACCESS_KEY_ID
-        sync: false
-      - key: OBJECT_STORAGE_SECRET_ACCESS_KEY
-        sync: false
-      - key: OBJECT_STORAGE_BUCKET_NAME
-        sync: false
-      - key: OBJECT_STORAGE_PUBLIC_BASE_URL
-        sync: false
-      - key: OBJECT_STORAGE_REGION
-        value: auto
 
 databases:
   - name: felissi-db
