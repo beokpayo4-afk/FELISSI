@@ -7,7 +7,10 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.development")
+if not os.environ.get("DJANGO_SETTINGS_MODULE"):
+    os.environ["DJANGO_SETTINGS_MODULE"] = (
+        "config.settings.production" if os.environ.get("RENDER") else "config.settings.development"
+    )
 
 django_application = get_asgi_application()
 
