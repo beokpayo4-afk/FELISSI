@@ -17,11 +17,13 @@ _PLACEHOLDER_SECRETS = {
     "testing",
 }
 
+# Render generateValue is a base64 256-bit secret (~44 chars). Require 32+, not 50,
+# or Blueprint-generated keys are rejected and the service crashes on boot.
 _secret = str(SECRET_KEY or "").strip()
 _secret_l = _secret.lower()
 if (
     not _secret
-    or len(_secret) < 50
+    or len(_secret) < 32
     or _secret_l in _PLACEHOLDER_SECRETS
     or _secret_l.startswith("replace-with")
     or _secret_l.startswith("django-insecure")
@@ -29,8 +31,8 @@ if (
 ):
     raise ValueError(
         "DJANGO_SECRET_KEY (or SECRET_KEY) must be set to a real secret in production "
-        "(at least 50 characters, not a placeholder). Use Render's generateValue or "
-        "a long random string."
+        f"(at least 32 characters, not a placeholder; got length={len(_secret)}). "
+        "In Render → Environment, add DJANGO_SECRET_KEY (Generate) or paste a long random string."
     )
 
 if not (DATABASE_URL or "").strip():
