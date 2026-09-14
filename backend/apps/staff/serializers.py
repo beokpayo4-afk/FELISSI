@@ -209,3 +209,43 @@ class StaffStoreSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = StoreSettings
         fields = ("gst_inclusive_pricing",)
+
+
+class StaffDashboardTotalsSerializer(serializers.Serializer):
+    products = serializers.IntegerField()
+    products_all = serializers.IntegerField()
+    orders = serializers.IntegerField()
+    orders_pending = serializers.IntegerField()
+    customers = serializers.IntegerField()
+    revenue = serializers.CharField()
+    revenue_today = serializers.CharField()
+
+
+class StaffDashboardSalesPointSerializer(serializers.Serializer):
+    date = serializers.CharField()
+    total = serializers.CharField()
+
+
+class StaffDashboardOrderMixSerializer(serializers.Serializer):
+    pending = serializers.IntegerField()
+    paid = serializers.IntegerField()
+    delivered = serializers.IntegerField()
+    cancelled = serializers.IntegerField()
+
+
+class StaffDashboardSerializer(serializers.Serializer):
+    generated_at = serializers.CharField()
+    timezone = serializers.CharField()
+    totals = StaffDashboardTotalsSerializer()
+    paid_orders = serializers.IntegerField()
+    delivered = serializers.IntegerField()
+    low_stock = serializers.IntegerField()
+    pending_reviews = serializers.IntegerField()
+    sales = StaffDashboardSalesPointSerializer(many=True)
+    order_mix = StaffDashboardOrderMixSerializer()
+
+
+class StaffOptionsSerializer(serializers.Serializer):
+    brands = StaffBrandSerializer(many=True)
+    categories = StaffCategorySerializer(many=True)
+    subcategories = StaffSubCategorySerializer(many=True)

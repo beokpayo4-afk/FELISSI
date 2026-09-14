@@ -285,3 +285,17 @@ def serialize_quote(quote: CartQuote) -> dict:
         "coupon_error": quote.coupon_error,
     }
     return CartQuoteSerializer(payload).data
+
+
+class PaymentMethodOptionSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    label = serializers.CharField()
+    available = serializers.BooleanField()
+    ready = serializers.BooleanField()
+
+
+class PaymentConfigSerializer(serializers.Serializer):
+    provider = serializers.CharField()
+    configured = serializers.BooleanField()
+    collects_card_on_site = serializers.BooleanField()
+    methods = PaymentMethodOptionSerializer(many=True)

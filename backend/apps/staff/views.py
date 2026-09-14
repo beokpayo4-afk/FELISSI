@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import Count, Prefetch, ProtectedError
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
@@ -24,6 +25,8 @@ from apps.staff.permissions import IsStoreStaff
 from apps.staff.serializers import (
     StaffBrandSerializer,
     StaffCategorySerializer,
+    StaffDashboardSerializer,
+    StaffOptionsSerializer,
     StaffOrderSerializer,
     StaffOrderUpdateSerializer,
     StaffProductImageSerializer,
@@ -39,7 +42,9 @@ from apps.staff.services import dashboard_payload
 
 class StaffDashboardView(APIView):
     permission_classes = [IsAuthenticated, IsStoreStaff]
+    serializer_class = StaffDashboardSerializer
 
+    @extend_schema(responses=StaffDashboardSerializer)
     def get(self, request):
         return Response(dashboard_payload())
 
@@ -47,7 +52,9 @@ class StaffDashboardView(APIView):
 class StaffOptionsView(APIView):
     permission_classes = [IsAuthenticated, IsStoreStaff]
     pagination_class = None
+    serializer_class = StaffOptionsSerializer
 
+    @extend_schema(responses=StaffOptionsSerializer)
     def get(self, request):
         return Response(
             {
@@ -119,12 +126,18 @@ class StaffProductImageListCreateView(APIView):
     permission_classes = [IsAuthenticated, IsStoreStaff]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
     pagination_class = None
+    serializer_class = StaffProductImageSerializer
 
+    @extend_schema(responses=StaffProductImageSerializer(many=True))
     def get(self, request, product_id):
         product = get_object_or_404(Product, pk=product_id)
         images = product.images.order_by("sort_order", "id")
         return Response(StaffProductImageSerializer(images, many=True).data)
 
+    @extend_schema(
+        request=StaffProductImageWriteSerializer,
+        responses={201: StaffProductImageSerializer},
+    )
     def post(self, request, product_id):
         product = get_object_or_404(Product, pk=product_id)
         writer = StaffProductImageWriteSerializer(data=request.data)
@@ -155,10 +168,15 @@ class StaffProductImageListCreateView(APIView):
 class StaffProductImageDetailView(APIView):
     permission_classes = [IsAuthenticated, IsStoreStaff]
     parser_classes = [JSONParser]
+    serializer_class = StaffProductImageSerializer
 
     def _get_image(self, product_id, image_id) -> ProductImage:
         return get_object_or_404(ProductImage, pk=image_id, product_id=product_id)
 
+    @extend_schema(
+        request=StaffProductImageUpdateSerializer,
+        responses=StaffProductImageSerializer,
+    )
     def patch(self, request, product_id, image_id):
         image = self._get_image(product_id, image_id)
         writer = StaffProductImageUpdateSerializer(data=request.data)
@@ -166,6 +184,7 @@ class StaffProductImageDetailView(APIView):
         image = update_stored_image(image, **writer.validated_data)
         return Response(StaffProductImageSerializer(image).data)
 
+    @extend_schema(request=None, responses={204: None})
     def delete(self, request, product_id, image_id):
         image = self._get_image(product_id, image_id)
         try:
@@ -204,10 +223,16 @@ class StaffOrderViewSet(ModelViewSet):
 
 class StaffStoreSettingsView(APIView):
     permission_classes = [IsAuthenticated, IsStoreStaff]
+    serializer_class = StaffStoreSettingsSerializer
 
+    @extend_schema(responses=StaffStoreSettingsSerializer)
     def get(self, request):
         return Response(StaffStoreSettingsSerializer(StoreSettings.load()).data)
 
+    @extend_schema(
+        request=StaffStoreSettingsSerializer,
+        responses=StaffStoreSettingsSerializer,
+    )
     def patch(self, request):
         settings = StoreSettings.load()
         serializer = StaffStoreSettingsSerializer(settings, data=request.data, partial=True)

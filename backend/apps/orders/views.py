@@ -1,3 +1,4 @@
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, ValidationError
@@ -18,6 +19,7 @@ from apps.orders.serializers import (
     CreateOrderSerializer,
     OrderDetailSerializer,
     OrderListSerializer,
+    PaymentConfigSerializer,
     UpdateCartItemSerializer,
     ValidateCouponSerializer,
     WishlistItemSerializer,
@@ -145,10 +147,27 @@ class WishlistViewSet(viewsets.ViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+@extend_schema_view(
+    list=extend_schema(responses=OrderListSerializer),
+    retrieve=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="order_number",
+                type=str,
+                location=OpenApiParameter.PATH,
+                description="Order number",
+            )
+        ],
+        responses=OrderDetailSerializer,
+    ),
+    create=extend_schema(request=CreateOrderSerializer, responses=OrderDetailSerializer),
+)
 class OrderViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticatedCustomer]
     serializer_class = OrderListSerializer
+    queryset = Order.objects.all()
     lookup_field = "order_number"
+    lookup_value_regex = r"[^/.]+"
 
     def list(self, request):
         customer = get_customer(request.user)
@@ -215,7 +234,9 @@ class OrderViewSet(viewsets.ViewSet):
 
 class PaymentConfigView(APIView):
     permission_classes = [AllowAny]
+    serializer_class = PaymentConfigSerializer
 
+    @extend_schema(responses=PaymentConfigSerializer, auth=[])
     def get(self, request):
         return Response(payment_settings())
 

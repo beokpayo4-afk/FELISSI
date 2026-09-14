@@ -1,0 +1,3008 @@
+openapi: 3.0.3
+info:
+  title: VoltCart API
+  version: 1.0.0
+  description: Electronics storefront API operated by FELISSI PRIVATE LIMITED. Product
+    images are stored on the local filesystem and served at /uploads/.
+paths:
+  /api/health/:
+    get:
+      operationId: health_retrieve
+      tags:
+      - health
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+          description: ''
+  /api/v1/addresses/:
+    get:
+      operationId: v1_addresses_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Address'
+          description: ''
+    post:
+      operationId: v1_addresses_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Address'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+          description: ''
+  /api/v1/addresses/{id}/:
+    get:
+      operationId: v1_addresses_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this address.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+          description: ''
+    put:
+      operationId: v1_addresses_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this address.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Address'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+          description: ''
+    patch:
+      operationId: v1_addresses_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this address.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAddress'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+          description: ''
+    delete:
+      operationId: v1_addresses_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this address.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/addresses/validate/:
+    post:
+      operationId: v1_addresses_validate_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Address'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+          description: ''
+  /api/v1/auth/change-password/:
+    post:
+      operationId: v1_auth_change_password_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangePassword'
+          description: ''
+  /api/v1/auth/login/:
+    post:
+      operationId: v1_auth_login_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login'
+          description: ''
+  /api/v1/auth/logout/:
+    post:
+      operationId: v1_auth_logout_create
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/auth/me/:
+    get:
+      operationId: v1_auth_me_retrieve
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+    patch:
+      operationId: v1_auth_me_partial_update
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCustomer'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+  /api/v1/auth/password-reset/:
+    post:
+      operationId: v1_auth_password_reset_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordResetRequest'
+          description: ''
+  /api/v1/auth/password-reset/confirm/:
+    post:
+      operationId: v1_auth_password_reset_confirm_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordResetConfirm'
+          description: ''
+  /api/v1/auth/register/:
+    post:
+      operationId: v1_auth_register_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Register'
+          description: ''
+  /api/v1/brands/:
+    get:
+      operationId: v1_brands_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Brand'
+          description: ''
+  /api/v1/cart/:
+    get:
+      operationId: v1_cart_list
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Cart'
+          description: ''
+    delete:
+      operationId: v1_cart_destroy
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/cart/items/:
+    post:
+      operationId: v1_cart_items_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cart'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+          description: ''
+  /api/v1/cart/items/{item_id}/:
+    patch:
+      operationId: v1_cart_items_partial_update
+      parameters:
+      - in: path
+        name: item_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCart'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+          description: ''
+    delete:
+      operationId: v1_cart_items_destroy
+      parameters:
+      - in: path
+        name: item_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/cart/quote/:
+    post:
+      operationId: v1_cart_quote_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CartQuoteRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartQuoteRequest'
+          description: ''
+  /api/v1/categories/:
+    get:
+      operationId: v1_categories_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCategoryListList'
+          description: ''
+  /api/v1/categories/{slug}/:
+    get:
+      operationId: v1_categories_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryDetail'
+          description: ''
+  /api/v1/categories/{slug}/subcategories/:
+    get:
+      operationId: v1_categories_subcategories_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryList'
+          description: ''
+  /api/v1/coupons/validate/:
+    post:
+      operationId: v1_coupons_validate_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateCoupon'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidateCoupon'
+          description: ''
+  /api/v1/orders/:
+    get:
+      operationId: v1_orders_list
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderList'
+          description: ''
+    post:
+      operationId: v1_orders_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrder'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDetail'
+          description: ''
+  /api/v1/orders/{order_number}/:
+    get:
+      operationId: v1_orders_retrieve
+      parameters:
+      - in: path
+        name: order_number
+        schema:
+          type: string
+        description: Order number
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDetail'
+          description: ''
+  /api/v1/payments/config/:
+    get:
+      operationId: v1_payments_config_retrieve
+      tags:
+      - v1
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentConfig'
+          description: ''
+  /api/v1/products/:
+    get:
+      operationId: v1_products_list
+      parameters:
+      - in: query
+        name: best_seller
+        schema:
+          type: boolean
+      - in: query
+        name: brand
+        schema:
+          type: string
+      - in: query
+        name: category
+        schema:
+          type: string
+      - in: query
+        name: featured
+        schema:
+          type: boolean
+      - in: query
+        name: max_price
+        schema:
+          type: number
+      - in: query
+        name: min_price
+        schema:
+          type: number
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+      - in: query
+        name: subcategory
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProductListList'
+          description: ''
+  /api/v1/products/{slug}/:
+    get:
+      operationId: v1_products_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDetail'
+          description: ''
+  /api/v1/products/{slug}/reviews/:
+    get:
+      operationId: v1_products_reviews_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductList'
+          description: ''
+    post:
+      operationId: v1_products_reviews_create
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductList'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductList'
+          description: ''
+  /api/v1/products/best-sellers/:
+    get:
+      operationId: v1_products_best_sellers_retrieve
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductList'
+          description: ''
+  /api/v1/products/featured/:
+    get:
+      operationId: v1_products_featured_retrieve
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductList'
+          description: ''
+  /api/v1/products/latest/:
+    get:
+      operationId: v1_products_latest_retrieve
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductList'
+          description: ''
+  /api/v1/products/suggest/:
+    get:
+      operationId: v1_products_suggest_retrieve
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchProduct'
+          description: ''
+  /api/v1/staff/dashboard/:
+    get:
+      operationId: v1_staff_dashboard_retrieve
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffDashboard'
+          description: ''
+  /api/v1/staff/options/:
+    get:
+      operationId: v1_staff_options_retrieve
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffOptions'
+          description: ''
+  /api/v1/staff/orders/:
+    get:
+      operationId: v1_staff_orders_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStaffOrderList'
+          description: ''
+  /api/v1/staff/orders/{order_number}/:
+    get:
+      operationId: v1_staff_orders_retrieve
+      parameters:
+      - in: path
+        name: order_number
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffOrder'
+          description: ''
+    patch:
+      operationId: v1_staff_orders_partial_update
+      parameters:
+      - in: path
+        name: order_number
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffOrder'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffOrder'
+          description: ''
+  /api/v1/staff/products/:
+    get:
+      operationId: v1_staff_products_list
+      parameters:
+      - in: query
+        name: brand
+        schema:
+          type: number
+      - in: query
+        name: category
+        schema:
+          type: number
+      - in: query
+        name: is_best_seller
+        schema:
+          type: boolean
+      - in: query
+        name: is_featured
+        schema:
+          type: boolean
+      - in: query
+        name: is_published
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: stock
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStaffProductList'
+          description: ''
+    post:
+      operationId: v1_staff_products_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffProductWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffProductWrite'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffProductWrite'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffProductWrite'
+          description: ''
+  /api/v1/staff/products/{id}/:
+    get:
+      operationId: v1_staff_products_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this product.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffProduct'
+          description: ''
+    patch:
+      operationId: v1_staff_products_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this product.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffProductWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffProductWrite'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffProductWrite'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffProductWrite'
+          description: ''
+    delete:
+      operationId: v1_staff_products_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this product.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/staff/products/{product_id}/images/:
+    get:
+      operationId: v1_staff_products_images_list
+      parameters:
+      - in: path
+        name: product_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StaffProductImage'
+          description: ''
+    post:
+      operationId: v1_staff_products_images_create
+      parameters:
+      - in: path
+        name: product_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffProductImageWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffProductImageWrite'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffProductImageWrite'
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffProductImage'
+          description: ''
+  /api/v1/staff/products/{product_id}/images/{image_id}/:
+    patch:
+      operationId: v1_staff_products_images_partial_update
+      parameters:
+      - in: path
+        name: image_id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: product_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffProductImageUpdate'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffProductImage'
+          description: ''
+    delete:
+      operationId: v1_staff_products_images_destroy
+      parameters:
+      - in: path
+        name: image_id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: product_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/staff/settings/:
+    get:
+      operationId: v1_staff_settings_retrieve
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffStoreSettings'
+          description: ''
+    patch:
+      operationId: v1_staff_settings_partial_update
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffStoreSettings'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffStoreSettings'
+          description: ''
+  /api/v1/store/settings/:
+    get:
+      operationId: v1_store_settings_retrieve
+      tags:
+      - v1
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicStoreSettings'
+          description: ''
+  /api/v1/wishlist/:
+    get:
+      operationId: v1_wishlist_list
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WishlistItem'
+          description: ''
+    post:
+      operationId: v1_wishlist_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WishlistItem'
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WishlistItem'
+          description: ''
+  /api/v1/wishlist/{id}/:
+    delete:
+      operationId: v1_wishlist_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-f-]+$
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    Address:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        full_name:
+          type: string
+          maxLength: 150
+        phone:
+          type: string
+          maxLength: 15
+        line1:
+          type: string
+          maxLength: 160
+        line2:
+          type: string
+          maxLength: 160
+        city:
+          type: string
+          maxLength: 80
+        state:
+          type: string
+          maxLength: 80
+        pincode:
+          type: string
+          pattern: ^\d{6}$
+          maxLength: 6
+        country:
+          type: string
+          maxLength: 64
+        is_default:
+          type: boolean
+      required:
+      - city
+      - full_name
+      - id
+      - line1
+      - phone
+      - pincode
+      - state
+    Brand:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        slug:
+          type: string
+          maxLength: 140
+          pattern: ^[-a-zA-Z0-9_]+$
+      required:
+      - id
+      - name
+      - slug
+    Cart:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+          readOnly: true
+        item_count:
+          type: integer
+          readOnly: true
+        subtotal:
+          type: string
+          readOnly: true
+        discount:
+          type: string
+          readOnly: true
+        gst:
+          type: string
+          readOnly: true
+        gst_inclusive:
+          type: boolean
+          readOnly: true
+        taxable_subtotal:
+          type: string
+          readOnly: true
+        shipping_charge:
+          type: string
+          readOnly: true
+        total:
+          type: string
+          readOnly: true
+        coupon_code:
+          type: string
+          nullable: true
+          readOnly: true
+        coupon_error:
+          type: string
+          nullable: true
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - coupon_code
+      - coupon_error
+      - discount
+      - gst
+      - gst_inclusive
+      - id
+      - item_count
+      - items
+      - shipping_charge
+      - subtotal
+      - taxable_subtotal
+      - total
+      - updated_at
+    CartItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product:
+          allOf:
+          - $ref: '#/components/schemas/ProductList'
+          readOnly: true
+        variant_id:
+          type: integer
+          readOnly: true
+        variant_name:
+          type: string
+          readOnly: true
+          nullable: true
+        quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+        unit_price:
+          type: string
+          readOnly: true
+        line_total:
+          type: string
+          readOnly: true
+      required:
+      - id
+      - line_total
+      - product
+      - quantity
+      - unit_price
+      - variant_id
+      - variant_name
+    CartQuoteRequest:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuoteItemListField'
+        coupon_code:
+          type: string
+          maxLength: 40
+      required:
+      - items
+    CategoryDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        slug:
+          type: string
+          maxLength: 140
+          pattern: ^[-a-zA-Z0-9_]+$
+        subcategories:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubCategory'
+          readOnly: true
+      required:
+      - id
+      - name
+      - slug
+      - subcategories
+    CategoryList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        slug:
+          type: string
+          maxLength: 140
+          pattern: ^[-a-zA-Z0-9_]+$
+      required:
+      - id
+      - name
+      - slug
+    ChangePassword:
+      type: object
+      properties:
+        current_password:
+          type: string
+          writeOnly: true
+        new_password:
+          type: string
+          writeOnly: true
+          maxLength: 128
+          minLength: 8
+      required:
+      - current_password
+      - new_password
+    CreateOrder:
+      type: object
+      properties:
+        shipping_address_id:
+          type: string
+          format: uuid
+        coupon_code:
+          type: string
+          maxLength: 40
+        payment_method:
+          allOf:
+          - $ref: '#/components/schemas/CreateOrderPaymentMethodEnum'
+          default: cod
+        client_request_id:
+          type: string
+          maxLength: 64
+      required:
+      - shipping_address_id
+    CreateOrderPaymentMethodEnum:
+      enum:
+      - cod
+      - online
+      type: string
+      description: |-
+        * `cod` - cod
+        * `online` - online
+    Customer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        full_name:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        phone:
+          type: string
+          readOnly: true
+        is_staff:
+          type: boolean
+          readOnly: true
+        addresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - addresses
+      - created_at
+      - email
+      - full_name
+      - id
+      - is_staff
+      - phone
+    Health:
+      type: object
+      properties:
+        status:
+          type: string
+        service:
+          type: string
+        database:
+          type: string
+      required:
+      - database
+      - service
+      - status
+    Login:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - email
+      - password
+    OrderDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        order_number:
+          type: string
+          readOnly: true
+        subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        discount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        gst:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        gst_inclusive:
+          type: boolean
+          description: Snapshot of store GST mode when the order was placed.
+        taxable_subtotal:
+          type: string
+          readOnly: true
+        shipping_charge:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethodEbfEnum'
+        payment_status:
+          $ref: '#/components/schemas/PaymentStatusEnum'
+        order_status:
+          $ref: '#/components/schemas/OrderStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        shipping_address:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          readOnly: true
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - items
+      - order_number
+      - shipping_address
+      - subtotal
+      - taxable_subtotal
+      - total
+      - updated_at
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product_name:
+          type: string
+          maxLength: 200
+        sku:
+          type: string
+          maxLength: 64
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+        gst_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        taxable_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        gst_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+      required:
+      - id
+      - product_name
+      - quantity
+      - sku
+      - unit_price
+    OrderList:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        order_number:
+          type: string
+          readOnly: true
+        subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        discount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        gst:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        gst_inclusive:
+          type: boolean
+          description: Snapshot of store GST mode when the order was placed.
+        taxable_subtotal:
+          type: string
+          readOnly: true
+        shipping_charge:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethodEbfEnum'
+        payment_status:
+          $ref: '#/components/schemas/PaymentStatusEnum'
+        order_status:
+          $ref: '#/components/schemas/OrderStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - order_number
+      - subtotal
+      - taxable_subtotal
+      - total
+    OrderStatusEnum:
+      enum:
+      - pending
+      - confirmed
+      - processing
+      - shipped
+      - delivered
+      - cancelled
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `confirmed` - Confirmed
+        * `processing` - Processing
+        * `shipped` - Shipped
+        * `delivered` - Delivered
+        * `cancelled` - Cancelled
+    PaginatedCategoryListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryList'
+    PaginatedProductListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductList'
+    PaginatedStaffOrderList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffOrder'
+    PaginatedStaffProductList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffProduct'
+    PasswordResetConfirm:
+      type: object
+      properties:
+        uid:
+          type: string
+        token:
+          type: string
+        new_password:
+          type: string
+          writeOnly: true
+          maxLength: 128
+          minLength: 8
+      required:
+      - new_password
+      - token
+      - uid
+    PasswordResetRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    PatchedAddress:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        full_name:
+          type: string
+          maxLength: 150
+        phone:
+          type: string
+          maxLength: 15
+        line1:
+          type: string
+          maxLength: 160
+        line2:
+          type: string
+          maxLength: 160
+        city:
+          type: string
+          maxLength: 80
+        state:
+          type: string
+          maxLength: 80
+        pincode:
+          type: string
+          pattern: ^\d{6}$
+          maxLength: 6
+        country:
+          type: string
+          maxLength: 64
+        is_default:
+          type: boolean
+    PatchedCart:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+          readOnly: true
+        item_count:
+          type: integer
+          readOnly: true
+        subtotal:
+          type: string
+          readOnly: true
+        discount:
+          type: string
+          readOnly: true
+        gst:
+          type: string
+          readOnly: true
+        gst_inclusive:
+          type: boolean
+          readOnly: true
+        taxable_subtotal:
+          type: string
+          readOnly: true
+        shipping_charge:
+          type: string
+          readOnly: true
+        total:
+          type: string
+          readOnly: true
+        coupon_code:
+          type: string
+          nullable: true
+          readOnly: true
+        coupon_error:
+          type: string
+          nullable: true
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedCustomer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        full_name:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        phone:
+          type: string
+          readOnly: true
+        is_staff:
+          type: boolean
+          readOnly: true
+        addresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedStaffOrder:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        order_number:
+          type: string
+          readOnly: true
+        customer_name:
+          type: string
+          readOnly: true
+        customer_email:
+          type: string
+          format: email
+          readOnly: true
+        total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethodEbfEnum'
+        payment_status:
+          $ref: '#/components/schemas/PaymentStatusEnum'
+        order_status:
+          $ref: '#/components/schemas/OrderStatusEnum'
+        item_count:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedStaffProductImageUpdate:
+      type: object
+      properties:
+        alt_text:
+          type: string
+          maxLength: 160
+        is_primary:
+          type: boolean
+        sort_order:
+          type: integer
+          minimum: 0
+    PatchedStaffProductWrite:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        sku:
+          type: string
+          maxLength: 64
+        short_description:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        brand:
+          type: integer
+        category:
+          type: integer
+        subcategory:
+          type: integer
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: MRP. Inclusive or exclusive of GST depends on store settings.
+        sale_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Selling price. Inclusive or exclusive of GST depends on store
+            settings.
+        gst_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: GST rate for this product. Do not use one store-wide rate.
+        stock_quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_published:
+          type: boolean
+          title: Published
+        is_featured:
+          type: boolean
+          title: Featured
+        is_best_seller:
+          type: boolean
+          title: Best seller
+        image:
+          type: string
+          format: uri
+          nullable: true
+          writeOnly: true
+        image_url:
+          type: string
+          writeOnly: true
+    PatchedStaffStoreSettings:
+      type: object
+      properties:
+        gst_inclusive_pricing:
+          type: boolean
+          description: If enabled, catalog prices already include GST. If disabled,
+            GST is added on top of the catalog price at checkout.
+    PaymentConfig:
+      type: object
+      properties:
+        provider:
+          type: string
+        configured:
+          type: boolean
+        collects_card_on_site:
+          type: boolean
+        methods:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentMethodOption'
+      required:
+      - collects_card_on_site
+      - configured
+      - methods
+      - provider
+    PaymentMethodEbfEnum:
+      enum:
+      - cod
+      - online
+      type: string
+      description: |-
+        * `cod` - Cash on delivery
+        * `online` - Online
+    PaymentMethodOption:
+      type: object
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        available:
+          type: boolean
+        ready:
+          type: boolean
+      required:
+      - available
+      - id
+      - label
+      - ready
+    PaymentStatusEnum:
+      enum:
+      - pending
+      - paid
+      - failed
+      - refunded
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `paid` - Paid
+        * `failed` - Failed
+        * `refunded` - Refunded
+    ProductDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 220
+          pattern: ^[-a-zA-Z0-9_]+$
+        sku:
+          type: string
+          maxLength: 64
+        short_description:
+          type: string
+          maxLength: 255
+        brand:
+          allOf:
+          - $ref: '#/components/schemas/Brand'
+          readOnly: true
+        category:
+          allOf:
+          - $ref: '#/components/schemas/CategoryList'
+          readOnly: true
+        subcategory:
+          allOf:
+          - $ref: '#/components/schemas/SubCategory'
+          readOnly: true
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: MRP. Inclusive or exclusive of GST depends on store settings.
+        sale_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Selling price. Inclusive or exclusive of GST depends on store
+            settings.
+        effective_price:
+          type: number
+          format: double
+          readOnly: true
+        average_rating:
+          type: number
+          format: double
+          readOnly: true
+          default: 0.0
+        review_count:
+          type: integer
+          readOnly: true
+          default: 0
+        gst_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: GST rate for this product. Do not use one store-wide rate.
+        gst_inclusive:
+          type: boolean
+          readOnly: true
+        taxable_price:
+          type: string
+          readOnly: true
+        gst_amount:
+          type: string
+          readOnly: true
+        inclusive_price:
+          type: string
+          readOnly: true
+        stock_quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_featured:
+          type: boolean
+          title: Featured
+        is_best_seller:
+          type: boolean
+          title: Best seller
+        primary_image:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        description:
+          type: string
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductImage'
+          readOnly: true
+        variants:
+          type: array
+          items: {}
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - average_rating
+      - brand
+      - category
+      - created_at
+      - description
+      - effective_price
+      - gst_amount
+      - gst_inclusive
+      - id
+      - images
+      - inclusive_price
+      - name
+      - price
+      - primary_image
+      - review_count
+      - short_description
+      - sku
+      - slug
+      - subcategory
+      - taxable_price
+      - updated_at
+      - variants
+    ProductImage:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        url:
+          type: string
+          description: Public path for the image, e.g. /uploads/products/<filename>.
+          maxLength: 500
+        alt_text:
+          type: string
+          maxLength: 160
+        sort_order:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        is_primary:
+          type: boolean
+      required:
+      - id
+    ProductList:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 220
+          pattern: ^[-a-zA-Z0-9_]+$
+        sku:
+          type: string
+          maxLength: 64
+        short_description:
+          type: string
+          maxLength: 255
+        brand:
+          allOf:
+          - $ref: '#/components/schemas/Brand'
+          readOnly: true
+        category:
+          allOf:
+          - $ref: '#/components/schemas/CategoryList'
+          readOnly: true
+        subcategory:
+          allOf:
+          - $ref: '#/components/schemas/SubCategory'
+          readOnly: true
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: MRP. Inclusive or exclusive of GST depends on store settings.
+        sale_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Selling price. Inclusive or exclusive of GST depends on store
+            settings.
+        effective_price:
+          type: number
+          format: double
+          readOnly: true
+        average_rating:
+          type: number
+          format: double
+          readOnly: true
+          default: 0.0
+        review_count:
+          type: integer
+          readOnly: true
+          default: 0
+        gst_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: GST rate for this product. Do not use one store-wide rate.
+        gst_inclusive:
+          type: boolean
+          readOnly: true
+        taxable_price:
+          type: string
+          readOnly: true
+        gst_amount:
+          type: string
+          readOnly: true
+        inclusive_price:
+          type: string
+          readOnly: true
+        stock_quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_featured:
+          type: boolean
+          title: Featured
+        is_best_seller:
+          type: boolean
+          title: Best seller
+        primary_image:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - average_rating
+      - brand
+      - category
+      - created_at
+      - effective_price
+      - gst_amount
+      - gst_inclusive
+      - id
+      - inclusive_price
+      - name
+      - price
+      - primary_image
+      - review_count
+      - short_description
+      - sku
+      - slug
+      - subcategory
+      - taxable_price
+    PublicStoreSettings:
+      type: object
+      properties:
+        gst_inclusive_pricing:
+          type: boolean
+        currency:
+          type: string
+        timezone:
+          type: string
+      required:
+      - currency
+      - gst_inclusive_pricing
+      - timezone
+    QuoteItem:
+      type: object
+      properties:
+        product_id:
+          type: string
+          format: uuid
+        variant_id:
+          type: integer
+          nullable: true
+        quantity:
+          type: integer
+          minimum: 1
+      required:
+      - product_id
+      - quantity
+    QuoteItemListField:
+      type: object
+      properties:
+        product_id:
+          type: string
+          format: uuid
+        variant_id:
+          type: integer
+          nullable: true
+        quantity:
+          type: integer
+          minimum: 1
+      required:
+      - product_id
+      - quantity
+    Register:
+      type: object
+      properties:
+        full_name:
+          type: string
+          maxLength: 150
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          maxLength: 15
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 128
+          minLength: 8
+      required:
+      - email
+      - full_name
+      - password
+      - phone
+    SearchProduct:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 220
+          pattern: ^[-a-zA-Z0-9_]+$
+        sku:
+          type: string
+          maxLength: 64
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: MRP. Inclusive or exclusive of GST depends on store settings.
+        sale_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Selling price. Inclusive or exclusive of GST depends on store
+            settings.
+        brand:
+          allOf:
+          - $ref: '#/components/schemas/Brand'
+          readOnly: true
+        category:
+          allOf:
+          - $ref: '#/components/schemas/CategoryList'
+          readOnly: true
+        primary_image:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          readOnly: true
+      required:
+      - brand
+      - category
+      - id
+      - name
+      - price
+      - primary_image
+      - sku
+      - slug
+    StaffBrand:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        slug:
+          type: string
+          maxLength: 140
+          pattern: ^[-a-zA-Z0-9_]+$
+      required:
+      - id
+      - name
+      - slug
+    StaffCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        slug:
+          type: string
+          maxLength: 140
+          pattern: ^[-a-zA-Z0-9_]+$
+      required:
+      - id
+      - name
+      - slug
+    StaffDashboard:
+      type: object
+      properties:
+        generated_at:
+          type: string
+        timezone:
+          type: string
+        totals:
+          $ref: '#/components/schemas/StaffDashboardTotals'
+        paid_orders:
+          type: integer
+        delivered:
+          type: integer
+        low_stock:
+          type: integer
+        pending_reviews:
+          type: integer
+        sales:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffDashboardSalesPoint'
+        order_mix:
+          $ref: '#/components/schemas/StaffDashboardOrderMix'
+      required:
+      - delivered
+      - generated_at
+      - low_stock
+      - order_mix
+      - paid_orders
+      - pending_reviews
+      - sales
+      - timezone
+      - totals
+    StaffDashboardOrderMix:
+      type: object
+      properties:
+        pending:
+          type: integer
+        paid:
+          type: integer
+        delivered:
+          type: integer
+        cancelled:
+          type: integer
+      required:
+      - cancelled
+      - delivered
+      - paid
+      - pending
+    StaffDashboardSalesPoint:
+      type: object
+      properties:
+        date:
+          type: string
+        total:
+          type: string
+      required:
+      - date
+      - total
+    StaffDashboardTotals:
+      type: object
+      properties:
+        products:
+          type: integer
+        products_all:
+          type: integer
+        orders:
+          type: integer
+        orders_pending:
+          type: integer
+        customers:
+          type: integer
+        revenue:
+          type: string
+        revenue_today:
+          type: string
+      required:
+      - customers
+      - orders
+      - orders_pending
+      - products
+      - products_all
+      - revenue
+      - revenue_today
+    StaffOptions:
+      type: object
+      properties:
+        brands:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffBrand'
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffCategory'
+        subcategories:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffSubCategory'
+      required:
+      - brands
+      - categories
+      - subcategories
+    StaffOrder:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        order_number:
+          type: string
+          readOnly: true
+        customer_name:
+          type: string
+          readOnly: true
+        customer_email:
+          type: string
+          format: email
+          readOnly: true
+        total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethodEbfEnum'
+        payment_status:
+          $ref: '#/components/schemas/PaymentStatusEnum'
+        order_status:
+          $ref: '#/components/schemas/OrderStatusEnum'
+        item_count:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - customer_email
+      - customer_name
+      - id
+      - item_count
+      - order_number
+      - total
+    StaffProduct:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 220
+          pattern: ^[-a-zA-Z0-9_]+$
+        sku:
+          type: string
+          maxLength: 64
+        short_description:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: MRP. Inclusive or exclusive of GST depends on store settings.
+        sale_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Selling price. Inclusive or exclusive of GST depends on store
+            settings.
+        gst_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: GST rate for this product. Do not use one store-wide rate.
+        stock_quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_published:
+          type: boolean
+          title: Published
+        is_featured:
+          type: boolean
+          title: Featured
+        is_best_seller:
+          type: boolean
+          title: Best seller
+        brand:
+          allOf:
+          - $ref: '#/components/schemas/StaffBrand'
+          readOnly: true
+        category:
+          allOf:
+          - $ref: '#/components/schemas/StaffCategory'
+          readOnly: true
+        subcategory:
+          allOf:
+          - $ref: '#/components/schemas/StaffSubCategory'
+          readOnly: true
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffProductImage'
+          readOnly: true
+        primary_image:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - brand
+      - category
+      - created_at
+      - description
+      - id
+      - images
+      - name
+      - price
+      - primary_image
+      - short_description
+      - sku
+      - slug
+      - subcategory
+    StaffProductImage:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        url:
+          type: string
+          description: Public path for the image, e.g. /uploads/products/<filename>.
+          maxLength: 500
+        alt_text:
+          type: string
+          maxLength: 160
+        sort_order:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        is_primary:
+          type: boolean
+      required:
+      - id
+    StaffProductImageWrite:
+      type: object
+      properties:
+        file:
+          type: string
+          format: uri
+          nullable: true
+        url:
+          type: string
+          maxLength: 500
+        alt_text:
+          type: string
+          maxLength: 160
+        is_primary:
+          type: boolean
+          default: false
+    StaffProductWrite:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        sku:
+          type: string
+          maxLength: 64
+        short_description:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        brand:
+          type: integer
+        category:
+          type: integer
+        subcategory:
+          type: integer
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: MRP. Inclusive or exclusive of GST depends on store settings.
+        sale_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Selling price. Inclusive or exclusive of GST depends on store
+            settings.
+        gst_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: GST rate for this product. Do not use one store-wide rate.
+        stock_quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_published:
+          type: boolean
+          title: Published
+        is_featured:
+          type: boolean
+          title: Featured
+        is_best_seller:
+          type: boolean
+          title: Best seller
+        image:
+          type: string
+          format: uri
+          nullable: true
+          writeOnly: true
+        image_url:
+          type: string
+          writeOnly: true
+      required:
+      - brand
+      - category
+      - description
+      - name
+      - price
+      - short_description
+      - sku
+      - subcategory
+    StaffStoreSettings:
+      type: object
+      properties:
+        gst_inclusive_pricing:
+          type: boolean
+          description: If enabled, catalog prices already include GST. If disabled,
+            GST is added on top of the catalog price at checkout.
+    StaffSubCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        slug:
+          type: string
+          maxLength: 140
+          pattern: ^[-a-zA-Z0-9_]+$
+        category:
+          type: integer
+      required:
+      - category
+      - id
+      - name
+      - slug
+    SubCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        slug:
+          type: string
+          maxLength: 140
+          pattern: ^[-a-zA-Z0-9_]+$
+      required:
+      - id
+      - name
+      - slug
+    ValidateCoupon:
+      type: object
+      properties:
+        code:
+          type: string
+          maxLength: 40
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuoteItem'
+      required:
+      - code
+    WishlistItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product:
+          allOf:
+          - $ref: '#/components/schemas/ProductList'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - product
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"
