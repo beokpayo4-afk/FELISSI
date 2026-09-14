@@ -1,5 +1,10 @@
 from .base import *  # noqa: F403
 from .base import ALLOWED_HOSTS, DATABASES, DATABASE_URL, SECRET_KEY, STORAGES, env
+from django.core.checks.security.base import (
+    SECRET_KEY_INSECURE_PREFIX,
+    SECRET_KEY_MIN_LENGTH,
+    SECRET_KEY_MIN_UNIQUE_CHARACTERS,
+)
 
 # Never expose Django's debug traceback page in production.
 DEBUG = False
@@ -17,22 +22,30 @@ _PLACEHOLDER_SECRETS = {
     "testing",
 }
 
-# Render generateValue is a base64 256-bit secret (~44 chars). Require 32+, not 50,
-# or Blueprint-generated keys are rejected and the service crashes on boot.
+# Match Django security.W009: length, unique characters, and insecure prefix.
+# Render's generateValue is only ~44 chars — paste a longer key (e.g. Django's
+# get_random_secret_key()) instead of relying on generateValue alone.
 _secret = str(SECRET_KEY or "").strip()
 _secret_l = _secret.lower()
 if (
     not _secret
-    or len(_secret) < 32
+    or len(_secret) < SECRET_KEY_MIN_LENGTH
+    or len(set(_secret)) < SECRET_KEY_MIN_UNIQUE_CHARACTERS
+    or _secret.startswith(SECRET_KEY_INSECURE_PREFIX)
     or _secret_l in _PLACEHOLDER_SECRETS
     or _secret_l.startswith("replace-with")
     or _secret_l.startswith("django-insecure")
     or _secret_l.startswith("change-me")
 ):
     raise ValueError(
-        "DJANGO_SECRET_KEY (or SECRET_KEY) must be set to a real secret in production "
-        f"(at least 32 characters, not a placeholder; got length={len(_secret)}). "
-        "In Render → Environment, add DJANGO_SECRET_KEY (Generate) or paste a long random string."
+        "DJANGO_SECRET_KEY (or SECRET_KEY) must meet Django's production rules "
+        f"(at least {SECRET_KEY_MIN_LENGTH} characters, "
+        f"at least {SECRET_KEY_MIN_UNIQUE_CHARACTERS} unique characters, "
+        f"not a placeholder; got length={len(_secret)}, "
+        f"unique={len(set(_secret)) if _secret else 0}). "
+        "In Render → Environment, paste a long random string "
+        '(python -c "from django.core.management.utils import get_random_secret_key; '
+        'print(get_random_secret_key())"). Render Generate alone is often too short.'
     )
 
 if not (DATABASE_URL or "").strip():
