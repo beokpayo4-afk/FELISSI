@@ -259,3 +259,22 @@ if FRONTEND_ORIGIN.startswith(("http://", "https://")):
         CORS_ALLOWED_ORIGINS.append(FRONTEND_ORIGIN)
     if FRONTEND_ORIGIN not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(FRONTEND_ORIGIN)
+
+# Always allow the live storefront, even if Render env still lists localhost only.
+_STOREFRONT_ORIGINS = (
+    "https://felissi-f.vercel.app",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5175",
+    "http://127.0.0.1:5175",
+)
+for _origin in _STOREFRONT_ORIGINS:
+    if _origin not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(_origin)
+    if _origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(_origin)
+
+# Vercel production + preview URLs (felissi-f, felissi-<hash>-….vercel.app).
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://felissi-[a-z0-9-]+\.vercel\.app$",
+]

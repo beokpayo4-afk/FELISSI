@@ -82,3 +82,13 @@ X_FRAME_OPTIONS = "DENY"
 render_host = env.str("RENDER_EXTERNAL_HOSTNAME", default="").strip()
 if render_host and render_host not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(render_host)
+
+_production_frontend = env.str("FRONTEND_ORIGIN", default="").strip().rstrip("/")
+if _production_frontend.startswith("https://"):
+    FRONTEND_ORIGIN = _production_frontend
+else:
+    FRONTEND_ORIGIN = "https://felissi-f.vercel.app"
+if FRONTEND_ORIGIN not in CORS_ALLOWED_ORIGINS:
+    CORS_ALLOWED_ORIGINS.append(FRONTEND_ORIGIN)
+if FRONTEND_ORIGIN not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append(FRONTEND_ORIGIN)

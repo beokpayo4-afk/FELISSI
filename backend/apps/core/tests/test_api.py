@@ -675,6 +675,25 @@ class VoltCartAPITests(APITestCase):
             response = self.client.get(url)
             self.assertRedirects(response, "/api/docs/", fetch_redirect_response=False)
 
+    def test_cors_allows_vercel_storefront(self):
+        origin = "https://felissi-f.vercel.app"
+        response = self.client.options(
+            "/api/v1/products/",
+            HTTP_ORIGIN=origin,
+            HTTP_ACCESS_CONTROL_REQUEST_METHOD="GET",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers.get("Access-Control-Allow-Origin"), origin)
+
+        login_preflight = self.client.options(
+            "/api/v1/auth/login/",
+            HTTP_ORIGIN=origin,
+            HTTP_ACCESS_CONTROL_REQUEST_METHOD="POST",
+            HTTP_ACCESS_CONTROL_REQUEST_HEADERS="content-type",
+        )
+        self.assertEqual(login_preflight.status_code, 200)
+        self.assertEqual(login_preflight.headers.get("Access-Control-Allow-Origin"), origin)
+
     def test_staff_dashboard_and_catalog(self):
         guest = self.client.get("/api/v1/staff/dashboard/")
         self.assertEqual(guest.status_code, 401)
