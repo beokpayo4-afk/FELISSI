@@ -15,6 +15,14 @@ function resolveAdminUrl(apiUrl: string): string {
   return "/admin/";
 }
 
+/** Frontend public files must stay on the storefront origin. `/uploads/` is API media. */
+const FRONTEND_MEDIA_PREFIXES = ["/placeholders/", "/catalog/", "/brand/"];
+
+function isFrontendMedia(path: string): boolean {
+  const normalized = path.startsWith("/") ? path : `/${path}`;
+  return FRONTEND_MEDIA_PREFIXES.some((prefix) => normalized.startsWith(prefix));
+}
+
 /** Resolve API-relative upload paths (e.g. /uploads/products/x.webp) against the API origin. */
 export function resolveMediaUrl(url: string | null | undefined): string {
   if (!url) {
@@ -23,7 +31,7 @@ export function resolveMediaUrl(url: string | null | undefined): string {
   if (/^(https?:|data:|blob:)/i.test(url)) {
     return url;
   }
-  if (url.startsWith("/placeholders/") || url.startsWith("placeholders/")) {
+  if (isFrontendMedia(url)) {
     return url.startsWith("/") ? url : `/${url}`;
   }
 
