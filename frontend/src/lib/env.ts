@@ -1,5 +1,9 @@
 // Static key so Vite inlines this in production; dynamic import.meta.env[name] is stripped.
-const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/$/, "");
+const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+if (!configuredApiBaseUrl) {
+  throw new Error("Missing required environment variable: VITE_API_BASE_URL");
+}
+const apiBaseUrl = configuredApiBaseUrl.replace(/\/$/, "");
 
 function resolveAdminUrl(apiUrl: string): string {
   if (apiUrl.startsWith("http://") || apiUrl.startsWith("https://")) {
