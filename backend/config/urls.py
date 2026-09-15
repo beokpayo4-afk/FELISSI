@@ -1,9 +1,9 @@
-from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path, re_path
 from django.views.generic import RedirectView
-from django.views.static import serve
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+
+from apps.core.media import serve_upload
 
 admin.site.site_header = "VoltCart"
 admin.site.site_title = "VoltCart admin"
@@ -21,13 +21,7 @@ urlpatterns = [
     path("api/v1/", include("config.api_urls")),
 ]
 
-# Serve local uploads in development and on Render (WhiteNoise does not serve MEDIA).
-# Paths are constrained under MEDIA_ROOT by django.views.static.serve.
+# Serve uploads from disk, then from PostgreSQL (Render disk is ephemeral).
 urlpatterns += [
-    re_path(
-        r"^uploads/(?P<path>.*)$",
-        serve,
-        {"document_root": settings.MEDIA_ROOT},
-        name="uploaded-files",
-    ),
+    re_path(r"^uploads/(?P<path>.*)$", serve_upload, name="uploaded-files"),
 ]

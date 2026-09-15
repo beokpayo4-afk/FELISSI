@@ -178,9 +178,11 @@ class ProductImage(models.Model):
     url = models.CharField(
         max_length=500,
         blank=True,
-        help_text="Public path for the image, e.g. /uploads/products/<filename>.",
+        help_text="Filled automatically after upload. Do not type a placeholder filename.",
     )
     storage_key = models.CharField(max_length=255, blank=True)
+    file_content = models.BinaryField(null=True, blank=True, editable=False)
+    file_content_type = models.CharField(max_length=64, blank=True)
     alt_text = models.CharField(max_length=160, blank=True)
     sort_order = models.PositiveSmallIntegerField(default=0)
     is_primary = models.BooleanField(default=False)

@@ -42,6 +42,8 @@ def store_uploaded_product_image(
         product=product,
         url=url,
         storage_key=key,
+        file_content=optimized.content,
+        file_content_type=optimized.content_type,
         alt_text=(alt_text or product.name)[:160],
         sort_order=sort_order,
         is_primary=False,
@@ -114,6 +116,8 @@ def persist_admin_upload(instance: ProductImage, uploaded) -> None:
     key = build_product_image_key(optimized.extension)
     instance.url = get_object_storage().upload(key, optimized.content, optimized.content_type)
     instance.storage_key = key
+    instance.file_content = optimized.content
+    instance.file_content_type = optimized.content_type
     instance.image = None
     if previous and previous != key:
         try:

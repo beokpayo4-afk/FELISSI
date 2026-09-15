@@ -99,6 +99,25 @@ class ProductImageStorageTests(APITestCase):
         self.assertTrue(remaining.is_primary)
         self.assertEqual(len(storage.objects), 1)
 
+    def test_uploaded_image_is_served_from_database(self):
+        created = self.client.post(
+            f"/api/v1/staff/products/{self.product.id}/images/",
+            {"file": tiny_png("front.png"), "alt_text": "Front"},
+            format="multipart",
+        )
+        self.assertEqual(created.status_code, 201, created.data)
+        image = ProductImage.objects.get(pk=created.data["id"])
+        self.assertTrue(image.file_content)
+        response = self.client.get(created.data["url"])
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "image/webp")
+        self.assertGreater(len(response.content), 32)
+
+    def test_placeholder_upload_path_is_not_a_debug_404(self):
+        response = self.client.get("/uploads/products/%3Cthat-file%3E.webp")
+        self.assertEqual(response.status_code, 404)
+        self.assertIn(b"upload the photo again", response.content.lower())
+
     def test_remote_url_does_not_write_storage_key(self):
         created = self.client.post(
             f"/api/v1/staff/products/{self.product.id}/images/",
