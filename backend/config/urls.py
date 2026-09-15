@@ -11,6 +11,8 @@ admin.site.index_title = "Manage the store"
 
 urlpatterns = [
     path("", RedirectView.as_view(url="/api/docs/", permanent=False), name="root"),
+    path("api", RedirectView.as_view(url="/api/docs/", permanent=False)),
+    path("api/", RedirectView.as_view(url="/api/docs/", permanent=False), name="api-root"),
     path("admin/", admin.site.urls),
     path("api/health/", include("apps.core.urls")),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
