@@ -322,11 +322,14 @@ def create_order(
         raise ValidationError({"payment_method": "Choose a valid payment method."})
 
     cart = Cart.objects.select_for_update().filter(customer=customer).first()
-    items = list(
-        CartItem.objects.select_for_update()
-        .select_related("product", "variant")
-        .filter(cart=cart)
+    # Lock cart_items only. select_related("variant") LEFT JOINs a nullable FK;
+    # PostgreSQL rejects FOR UPDATE on the nullable side of an outer join.
+    item_ids = list(
+        CartItem.objects.select_for_update().filter(cart=cart).values_list("pk", flat=True)
     ) if cart else []
+    items = list(
+        CartItem.objects.select_related("product", "variant").filter(pk__in=item_ids)
+    )
     if not items:
         raise ValidationError({"detail": "Your cart is empty."})
 
