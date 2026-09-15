@@ -35,17 +35,25 @@ def _csv_origins(*candidates: str, default: list[str] | None = None) -> list[str
         raw = env.str(name, default="").strip()
         if not raw:
             continue
-        origins: list[str] = []
-        for item in raw.split(","):
-            origin = item.strip().rstrip("/")
-            if not origin:
-                continue
-            if origin.startswith(("http://", "https://")):
-                origins.append(origin)
-            # Ignore bare hostnames — CSRF/CORS require a scheme.
+        origins = _ensure_origin_list(raw)
         if origins:
             return origins
     return list(default or [])
+
+
+def _ensure_origin_list(value: object, *, default: list[str] | None = None) -> list[str]:
+    """Coerce a Render/env string or sequence into a mutable http(s) origin list."""
+    fallback = list(default or [])
+    if value is None:
+        return fallback
+    if isinstance(value, str):
+        parts = [part.strip().rstrip("/") for part in value.split(",") if part.strip()]
+    elif isinstance(value, (list, tuple, set)):
+        parts = [str(item).strip().rstrip("/") for item in value if str(item).strip()]
+    else:
+        return fallback
+    origins = [part for part in parts if part.startswith(("http://", "https://"))]
+    return origins if origins else fallback
 
 
 def _env_bool(*candidates: str, default: bool = False) -> bool:
@@ -227,17 +235,24 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
-CORS_ALLOWED_ORIGINS = _csv_origins(
-    "CORS_ALLOWED_ORIGINS",
+CORS_ALLOWED_ORIGINS = _ensure_origin_list(
+    _csv_origins(
+        "CORS_ALLOWED_ORIGINS",
+        default=["http://localhost:5173"],
+    ),
     default=["http://localhost:5173"],
 )
 CORS_ALLOW_CREDENTIALS = False
 CORS_ALLOW_METHODS = ["DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT", "HEAD"]
 CORS_EXPOSE_HEADERS = ["Content-Type", "Content-Length"]
-CSRF_TRUSTED_ORIGINS = _csv_origins(
-    "CSRF_TRUSTED_ORIGINS",
+CSRF_TRUSTED_ORIGINS = _ensure_origin_list(
+    _csv_origins(
+        "CSRF_TRUSTED_ORIGINS",
+        default=["http://localhost:5173"],
+    ),
     default=["http://localhost:5173"],
 )
+CORS_ALLOWED_ORIGIN_REGEXES: list[str] = []
 
 # Payment gateway — leave keys empty. Never put live credentials in the repo.
 PAYMENT_PROVIDER = env("PAYMENT_PROVIDER", default="razorpay")
@@ -254,27 +269,10 @@ EMAIL_BACKEND = env(
 )
 
 # Keep CORS/CSRF aligned with FRONTEND_ORIGIN when it is a full http(s) origin.
+CORS_ALLOWED_ORIGINS = _ensure_origin_list(CORS_ALLOWED_ORIGINS, default=["http://localhost:5173"])
+CSRF_TRUSTED_ORIGINS = _ensure_origin_list(CSRF_TRUSTED_ORIGINS, default=["http://localhost:5173"])
 if FRONTEND_ORIGIN.startswith(("http://", "https://")):
     if FRONTEND_ORIGIN not in CORS_ALLOWED_ORIGINS:
         CORS_ALLOWED_ORIGINS.append(FRONTEND_ORIGIN)
     if FRONTEND_ORIGIN not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(FRONTEND_ORIGIN)
-
-# Always allow the live storefront, even if Render env still lists localhost only.
-_STOREFRONT_ORIGINS = (
-    "https://felissi-f.vercel.app",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:5175",
-    "http://127.0.0.1:5175",
-)
-for _origin in _STOREFRONT_ORIGINS:
-    if _origin not in CORS_ALLOWED_ORIGINS:
-        CORS_ALLOWED_ORIGINS.append(_origin)
-    if _origin not in CSRF_TRUSTED_ORIGINS:
-        CSRF_TRUSTED_ORIGINS.append(_origin)
-
-# Vercel production + preview URLs (felissi-f, felissi-<hash>-….vercel.app).
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^https://felissi-[a-z0-9-]+\.vercel\.app$",
-]

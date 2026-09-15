@@ -1,5 +1,16 @@
 from .base import *  # noqa: F403
-from .base import ALLOWED_HOSTS, DATABASES, DATABASE_URL, SECRET_KEY, STORAGES, env
+from .base import (
+    ALLOWED_HOSTS,
+    CORS_ALLOWED_ORIGIN_REGEXES,
+    CORS_ALLOWED_ORIGINS,
+    CSRF_TRUSTED_ORIGINS,
+    DATABASES,
+    DATABASE_URL,
+    SECRET_KEY,
+    STORAGES,
+    _ensure_origin_list,
+    env,
+)
 from django.core.checks.security.base import (
     SECRET_KEY_INSECURE_PREFIX,
     SECRET_KEY_MIN_LENGTH,
@@ -83,12 +94,23 @@ render_host = env.str("RENDER_EXTERNAL_HOSTNAME", default="").strip()
 if render_host and render_host not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(render_host)
 
+CORS_ALLOWED_ORIGINS = _ensure_origin_list(CORS_ALLOWED_ORIGINS)
+CSRF_TRUSTED_ORIGINS = _ensure_origin_list(CSRF_TRUSTED_ORIGINS)
+CORS_ALLOWED_ORIGIN_REGEXES = list(CORS_ALLOWED_ORIGIN_REGEXES)
+
+_PRODUCTION_STOREFRONT = "https://felissi-f.vercel.app"
 _production_frontend = env.str("FRONTEND_ORIGIN", default="").strip().rstrip("/")
 if _production_frontend.startswith("https://"):
     FRONTEND_ORIGIN = _production_frontend
 else:
-    FRONTEND_ORIGIN = "https://felissi-f.vercel.app"
-if FRONTEND_ORIGIN not in CORS_ALLOWED_ORIGINS:
-    CORS_ALLOWED_ORIGINS.append(FRONTEND_ORIGIN)
-if FRONTEND_ORIGIN not in CSRF_TRUSTED_ORIGINS:
-    CSRF_TRUSTED_ORIGINS.append(FRONTEND_ORIGIN)
+    FRONTEND_ORIGIN = _PRODUCTION_STOREFRONT
+
+for _origin in (_PRODUCTION_STOREFRONT, FRONTEND_ORIGIN):
+    if _origin.startswith("https://") and _origin not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(_origin)
+    if _origin.startswith("https://") and _origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(_origin)
+
+_vercel_preview = r"^https://felissi-[a-z0-9-]+\.vercel\.app$"
+if _vercel_preview not in CORS_ALLOWED_ORIGIN_REGEXES:
+    CORS_ALLOWED_ORIGIN_REGEXES.append(_vercel_preview)
