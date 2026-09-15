@@ -1,12 +1,5 @@
-function required(name: keyof ImportMetaEnv): string {
-  const value = import.meta.env[name];
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
-  return value;
-}
-
-const apiBaseUrl = required("VITE_API_BASE_URL").replace(/\/$/, "");
+// Static key so Vite inlines this in production; dynamic import.meta.env[name] is stripped.
+const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/$/, "");
 
 function resolveAdminUrl(apiUrl: string): string {
   if (apiUrl.startsWith("http://") || apiUrl.startsWith("https://")) {
