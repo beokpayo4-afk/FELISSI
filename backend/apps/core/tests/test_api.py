@@ -666,6 +666,10 @@ class VoltCartAPITests(APITestCase):
         docs = self.client.get("/api/docs/")
         self.assertEqual(docs.status_code, 200)
 
+    def test_root_redirects_to_docs(self):
+        response = self.client.get("/")
+        self.assertRedirects(response, "/api/docs/", fetch_redirect_response=False)
+
     def test_staff_dashboard_and_catalog(self):
         guest = self.client.get("/api/v1/staff/dashboard/")
         self.assertEqual(guest.status_code, 401)
