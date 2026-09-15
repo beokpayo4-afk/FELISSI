@@ -3,6 +3,30 @@
 from __future__ import annotations
 
 import os
+import subprocess
+import sys
+from pathlib import Path
+
+
+def ensure_project_interpreter() -> None:
+    """Re-run manage.py with backend/.venv when another Python was used.
+
+    System Python often has IPython but not this project's packages. Django 5.2
+    then opens a shell with DJANGO_SETTINGS_MODULE set and apps not ready.
+    """
+    if os.environ.get("RENDER") or os.environ.get("CI"):
+        return
+    backend = Path(__file__).resolve().parent.parent
+    venv_root = (backend / ".venv").resolve()
+    if not venv_root.is_dir():
+        return
+    if Path(sys.prefix).resolve() == venv_root:
+        return
+    python = venv_root / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    if not python.is_file():
+        return
+    # Windows paths with spaces (e.g. C:\Users\Raj roshan\...) break os.execv.
+    raise SystemExit(subprocess.run([str(python), *sys.argv]).returncode)
 
 
 def configure_settings_module() -> str:
