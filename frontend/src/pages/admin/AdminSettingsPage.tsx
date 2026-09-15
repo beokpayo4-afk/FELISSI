@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { getApiErrorMessage } from "@/api/errors";
 import { fetchStaffSettings, patchStaffSettings } from "@/api/staff";
-import { env } from "@/lib/env";
 
 export function AdminSettingsPage() {
   const [inclusive, setInclusive] = useState(false);
@@ -106,12 +105,6 @@ export function AdminSettingsPage() {
             <dd className="font-medium">FELISSI PRIVATE LIMITED</dd>
           </div>
         </dl>
-        <a
-          href={env.adminUrl}
-          className="mt-6 inline-flex h-10 items-center rounded-full border border-slate-200 px-4 text-sm font-semibold text-slate-800"
-        >
-          Open Django admin
-        </a>
       </section>
     </div>
   );

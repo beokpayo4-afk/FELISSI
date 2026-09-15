@@ -48,7 +48,7 @@ export function LoginPage() {
   return (
     <AuthCard
       title="Sign in"
-      description="Customers go to their account after sign in. Store staff open the FELISSI admin workspace from this same form."
+      description="One sign-in for everyone. Shoppers open their account; store staff open the FELISSI admin workspace — no separate admin login."
     >
       {expired ? (
         <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
