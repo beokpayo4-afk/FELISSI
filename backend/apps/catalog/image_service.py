@@ -49,6 +49,7 @@ def store_uploaded_product_image(
         is_primary=False,
     )
     image.save()
+    _persist_file_bytes(image, optimized.content, optimized.content_type, key=key, url=url)
     if make_primary:
         _set_primary(product, image)
         image.refresh_from_db()
@@ -124,3 +125,26 @@ def persist_admin_upload(instance: ProductImage, uploaded) -> None:
             get_object_storage().delete(previous)
         except ObjectStorageError:
             pass
+
+
+def _persist_file_bytes(
+    image: ProductImage,
+    content: bytes,
+    content_type: str,
+    *,
+    key: str,
+    url: str,
+) -> None:
+    """Force bytea onto the row. Model.save() can skip BinaryField on some backends."""
+    if not image.pk or not content:
+        return
+    ProductImage.objects.filter(pk=image.pk).update(
+        file_content=content,
+        file_content_type=content_type,
+        storage_key=key,
+        url=url,
+    )
+    image.file_content = content
+    image.file_content_type = content_type
+    image.storage_key = key
+    image.url = url

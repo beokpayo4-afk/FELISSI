@@ -43,9 +43,16 @@ class BrandSerializer(serializers.ModelSerializer):
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
+    url = serializers.SerializerMethodField()
+
     class Meta:
         model = ProductImage
         fields = ("id", "url", "alt_text", "sort_order", "is_primary")
+
+    def get_url(self, obj: ProductImage) -> str:
+        from apps.core.media import public_product_image_url
+
+        return public_product_image_url(obj)
 
 
 class SearchProductSerializer(serializers.ModelSerializer):

@@ -1,16 +1,18 @@
 import { Link } from "react-router-dom";
+import { resolveMediaUrl } from "@/lib/env";
 import type { CatalogCategory } from "@/types/catalog";
 
 export function CategoryCard({ category }: { category: CatalogCategory }) {
+  const src = resolveMediaUrl(category.image) || category.image;
   return (
     <Link to={category.to} className="group block">
       <div className="img-frame aspect-4/5 overflow-hidden">
         <img
-          src={category.image}
+          src={src}
           alt=""
           loading="lazy"
           decoding="async"
-          className="size-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+          className="size-full object-contain bg-white p-4 transition-transform duration-500 ease-out group-hover:scale-[1.04] sm:p-6"
           onError={(event) => {
             event.currentTarget.src = "/placeholders/product.svg";
           }}

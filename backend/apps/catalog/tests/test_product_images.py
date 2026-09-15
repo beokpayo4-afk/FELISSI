@@ -59,8 +59,7 @@ class ProductImageStorageTests(APITestCase):
         )
         self.assertEqual(first.status_code, 201, first.data)
         self.assertTrue(first.data["is_primary"])
-        self.assertTrue(first.data["url"].startswith("/uploads/products/"))
-        self.assertTrue(first.data["url"].endswith(".webp"))
+        self.assertTrue(first.data["url"].startswith("/uploads/images/"))
 
         second = self.client.post(
             f"/api/v1/staff/products/{self.product.id}/images/",
@@ -112,6 +111,26 @@ class ProductImageStorageTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "image/webp")
         self.assertGreater(len(response.content), 32)
+
+        legacy = self.client.get(image.url)
+        self.assertEqual(legacy.status_code, 200)
+        self.assertEqual(legacy.content, response.content)
+
+    def test_image_is_served_when_storage_key_does_not_match_path(self):
+        created = self.client.post(
+            f"/api/v1/staff/products/{self.product.id}/images/",
+            {"file": tiny_png("front.png"), "alt_text": "Front"},
+            format="multipart",
+        )
+        self.assertEqual(created.status_code, 201, created.data)
+        image = ProductImage.objects.get(pk=created.data["id"])
+        stored_url = image.url
+        image.storage_key = "products/missing-on-disk.webp"
+        image.save(update_fields=["storage_key"])
+        by_id = self.client.get(f"/uploads/images/{image.id}")
+        self.assertEqual(by_id.status_code, 200, by_id.content[:200])
+        by_url = self.client.get(stored_url)
+        self.assertEqual(by_url.status_code, 200, by_url.content[:200])
 
     def test_placeholder_upload_path_is_not_a_debug_404(self):
         response = self.client.get("/uploads/products/%3Cthat-file%3E.webp")

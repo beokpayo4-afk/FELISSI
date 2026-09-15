@@ -19,6 +19,10 @@ export function HomePage() {
 
   const bestSellerProducts = pickProducts(bestSellers, catalogFallback, 8);
   const newArrivalProducts = pickProducts(newArrivals, catalogFallback, 8);
+  const categories = withLiveCategoryImages(
+    featuredCategories,
+    catalogFallback.status === "ready" ? catalogFallback.products : [],
+  );
 
   return (
     <div>
@@ -30,7 +34,7 @@ export function HomePage() {
             <SectionHeader eyebrow="Browse" title="Shop by category" actionTo="/shop" />
           </Reveal>
           <ul className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4 md:gap-x-6">
-            {featuredCategories.map((category, index) => (
+            {categories.map((category, index) => (
               <Reveal key={category.id} as="li" delay={index * 80}>
                 <CategoryCard category={category} />
               </Reveal>
@@ -112,6 +116,19 @@ function HomeProductSection({
     return <p className="text-sm text-muted">No products in this section yet.</p>;
   }
   return <ProductGrid products={state.products} animate />;
+}
+
+function withLiveCategoryImages(
+  categories: (typeof featuredCategories)[number][],
+  products: CatalogProduct[],
+) {
+  return categories.map((category) => {
+    const product = products.find((item) => item.category === category.id);
+    if (!product?.image || product.image.includes("/placeholders/")) {
+      return category;
+    }
+    return { ...category, image: product.image };
+  });
 }
 
 function pickProducts(

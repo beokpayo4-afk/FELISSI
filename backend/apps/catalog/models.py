@@ -207,11 +207,22 @@ class ProductImage(models.Model):
 
     def save(self, *args, **kwargs) -> None:
         incoming = self.image
-        if incoming and not getattr(incoming, "_committed", True):
+        uploaded = bool(incoming and not getattr(incoming, "_committed", True))
+        if uploaded:
             from apps.catalog.image_service import persist_admin_upload
 
             persist_admin_upload(self, incoming)
         super().save(*args, **kwargs)
+        if uploaded and self.pk and self.file_content:
+            from apps.catalog.image_service import _persist_file_bytes
+
+            _persist_file_bytes(
+                self,
+                bytes(self.file_content),
+                self.file_content_type or "image/webp",
+                key=self.storage_key,
+                url=self.url,
+            )
         if self.image and not self.url:
             public_url = self.image.url
             if self.url != public_url:
