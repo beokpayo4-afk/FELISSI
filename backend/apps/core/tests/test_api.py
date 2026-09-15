@@ -685,6 +685,17 @@ class VoltCartAPITests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.headers.get("Access-Control-Allow-Origin"), origin)
 
+        checkout = self.client.options(
+            "/api/v1/orders/",
+            HTTP_ORIGIN=origin,
+            HTTP_ACCESS_CONTROL_REQUEST_METHOD="POST",
+            HTTP_ACCESS_CONTROL_REQUEST_HEADERS="content-type,authorization,idempotency-key",
+        )
+        self.assertEqual(checkout.status_code, 200)
+        self.assertEqual(checkout.headers.get("Access-Control-Allow-Origin"), origin)
+        allowed = (checkout.headers.get("Access-Control-Allow-Headers") or "").lower()
+        self.assertIn("idempotency-key", allowed)
+
     def test_staff_dashboard_and_catalog(self):
         guest = self.client.get("/api/v1/staff/dashboard/")
         self.assertEqual(guest.status_code, 401)

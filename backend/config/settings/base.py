@@ -3,6 +3,7 @@ from pathlib import Path
 
 import dj_database_url
 import environ
+from corsheaders.defaults import default_headers
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -244,6 +245,10 @@ CORS_ALLOWED_ORIGINS = _ensure_origin_list(
 )
 CORS_ALLOW_CREDENTIALS = False
 CORS_ALLOW_METHODS = ["DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT", "HEAD"]
+CORS_ALLOW_HEADERS = (
+    *default_headers,
+    "idempotency-key",
+)
 CORS_EXPOSE_HEADERS = ["Content-Type", "Content-Length"]
 CSRF_TRUSTED_ORIGINS = _ensure_origin_list(
     _csv_origins(
