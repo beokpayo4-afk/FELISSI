@@ -567,8 +567,8 @@ class VoltCartAPITests(APITestCase):
         self.assertEqual(quote.data["subtotal"], "100.00")
         self.assertEqual(quote.data["discount"], "0.00")
         self.assertEqual(quote.data["gst"], "18.00")
-        self.assertEqual(quote.data["shipping_charge"], "49.00")
-        self.assertEqual(quote.data["total"], "167.00")
+        self.assertEqual(quote.data["shipping_charge"], "0.00")
+        self.assertEqual(quote.data["total"], "118.00")
         self.assertIsNotNone(quote.data["coupon_error"])
 
         discounted = self.client.post(

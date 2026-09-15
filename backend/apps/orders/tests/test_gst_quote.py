@@ -47,13 +47,13 @@ class GstQuoteTests(APITestCase):
             is_published=True,
         )
 
-    def test_exclusive_adds_gst_then_shipping(self):
+    def test_exclusive_adds_gst_without_shipping(self):
         quote = compute_quote([price_line(self.exclusive, None, 1)], gst_inclusive=False)
         self.assertFalse(quote.gst_inclusive)
         self.assertEqual(quote.subtotal, Decimal("100.00"))
         self.assertEqual(quote.gst, Decimal("18.00"))
-        self.assertEqual(quote.shipping_charge, Decimal("49.00"))
-        self.assertEqual(quote.total, Decimal("167.00"))
+        self.assertEqual(quote.shipping_charge, Decimal("0.00"))
+        self.assertEqual(quote.total, Decimal("118.00"))
 
     def test_inclusive_does_not_add_gst_again(self):
         self.exclusive.price = Decimal("118.00")
@@ -63,8 +63,8 @@ class GstQuoteTests(APITestCase):
         self.assertEqual(quote.subtotal, Decimal("118.00"))
         self.assertEqual(quote.gst, Decimal("18.00"))
         self.assertEqual(quote.taxable_subtotal, Decimal("100.00"))
-        self.assertEqual(quote.shipping_charge, Decimal("49.00"))
-        self.assertEqual(quote.total, Decimal("167.00"))
+        self.assertEqual(quote.shipping_charge, Decimal("0.00"))
+        self.assertEqual(quote.total, Decimal("118.00"))
 
     def test_mixed_product_gst_rates(self):
         quote = compute_quote(
@@ -73,7 +73,7 @@ class GstQuoteTests(APITestCase):
         )
         self.assertEqual(quote.subtotal, Decimal("300.00"))
         self.assertEqual(quote.gst, Decimal("42.00"))
-        self.assertEqual(quote.total, Decimal("391.00"))
+        self.assertEqual(quote.total, Decimal("342.00"))
 
     def test_product_api_exposes_breakdown(self):
         response = self.client.get(f"/api/v1/products/{self.exclusive.slug}/")

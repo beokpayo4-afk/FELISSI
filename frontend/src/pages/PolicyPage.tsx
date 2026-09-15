@@ -73,8 +73,8 @@ const policies = {
     body: (
       <>
         <p>
-          Standard delivery is offered across major Indian cities. This
-          storefront already states that shipping is free on orders over ₹499.
+          Standard delivery is offered across major Indian cities. Shipping is
+          free on every order.
         </p>
         <p>
           Delivery questions can be sent to {company.legalName} at{" "}

@@ -13,7 +13,7 @@ const benefits = [
   },
   {
     icon: Truck,
-    title: "Free shipping over ₹499",
+    title: "Free shipping",
     copy: "Standard delivery across major Indian cities.",
   },
   {

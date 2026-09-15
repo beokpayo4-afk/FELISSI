@@ -6,7 +6,7 @@ from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
 from apps.catalog.models import Product, ProductVariant
-from apps.core.constants import FREE_SHIPPING_MIN, STANDARD_SHIPPING_CHARGE
+from apps.core.constants import STANDARD_SHIPPING_CHARGE
 from apps.core.models import StoreSettings
 from apps.core.pricing import gst_included_in, gst_on_exclusive, money
 from apps.orders.models import Cart, CartItem, Coupon, DiscountType, Order, OrderItem, PaymentMethod
@@ -55,9 +55,7 @@ def coupon_discount(coupon: Coupon, subtotal: Decimal) -> Decimal:
     return discount
 
 
-def shipping_charge_for(amount_after_discount: Decimal) -> Decimal:
-    if amount_after_discount >= FREE_SHIPPING_MIN:
-        return Decimal("0.00")
+def shipping_charge_for(_amount_after_discount: Decimal) -> Decimal:
     return STANDARD_SHIPPING_CHARGE
 
 

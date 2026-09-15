@@ -64,7 +64,7 @@ export function AdminSettingsPage() {
             />
             <span>
               <strong className="block text-slate-950">GST exclusive</strong>
-              Product price + GST − Discount + Shipping = final amount. GST is added at checkout.
+              Product price + GST − Discount = final amount. GST is added at checkout.
             </span>
           </label>
           <label
@@ -82,8 +82,8 @@ export function AdminSettingsPage() {
             />
             <span>
               <strong className="block text-slate-950">GST inclusive</strong>
-              Catalog prices already include GST. Discount and shipping apply to that price; GST is
-              shown but not added again.
+              Catalog prices already include GST. Discount applies to that price; GST is shown but
+              not added again.
             </span>
           </label>
         </div>

@@ -134,7 +134,7 @@ export function InvoicePage() {
         <p className="mt-3 text-xs text-slate-500">
           {order.gst_inclusive
             ? "Catalog prices on this invoice include GST. GST is shown for disclosure and is not added again."
-            : "Catalog prices on this invoice exclude GST. GST is added after discount, then shipping."}
+            : "Catalog prices on this invoice exclude GST. GST is added after discount."}
         </p>
       </div>
     </section>
