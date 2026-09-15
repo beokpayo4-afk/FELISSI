@@ -15,6 +15,11 @@ __pycache__/
 backend/.env
 backend/.env.*
 !backend/.env.example
+# Public Vite vars (no secrets). Production builds do not load .env.development.
+!frontend/.env
+!frontend/.env.development
+!frontend/.env.production
+!frontend/.env.example
 
 # Build and cache
 dist/
