@@ -35,6 +35,11 @@ export interface ApiOrder {
     provider?: string;
     order_number?: string;
     message?: string;
+    upi_vpa?: string;
+    upi_payee_name?: string;
+    amount?: string;
+    currency?: string;
+    intent_url?: string;
   };
 }
 
@@ -49,6 +54,8 @@ export interface PaymentConfig {
   provider: string;
   configured: boolean;
   collects_card_on_site: boolean;
+  upi_vpa?: string;
+  upi_payee_name?: string;
   methods: Array<{
     id: PaymentMethod;
     label: string;

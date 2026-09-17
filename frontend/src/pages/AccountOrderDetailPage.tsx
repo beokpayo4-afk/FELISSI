@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { getApiErrorMessage, isNotFoundError } from "@/api/errors";
 import { fetchOrder } from "@/api/orders";
 import { OrderSummaryCard } from "@/components/account/OrderSummaryCard";
+import { UpiPayPanel } from "@/components/checkout/UpiPayPanel";
 import { ShopErrorState } from "@/components/shop/ShopErrorState";
 import type { ApiOrder } from "@/types/order";
 
@@ -83,11 +84,14 @@ export function AccountOrderDetailPage() {
       <Link to="/account/orders" className="text-sm font-medium text-sky-700 hover:text-sky-800">
         Back to orders
       </Link>
-      <div className="mt-4">
+      <div className="mt-4 space-y-5">
         <OrderSummaryCard order={order} />
+        {order.payment_method === "online" && order.payment_status === "pending" ? (
+          <UpiPayPanel order={order} />
+        ) : null}
         <Link
           to={`/account/orders/${order.order_number}/invoice`}
-          className="mt-5 inline-flex h-10 items-center rounded-full bg-sky-600 px-4 text-sm font-semibold text-white hover:bg-sky-700"
+          className="inline-flex h-10 items-center rounded-full bg-sky-600 px-4 text-sm font-semibold text-white hover:bg-sky-700"
         >
           Download invoice
         </Link>

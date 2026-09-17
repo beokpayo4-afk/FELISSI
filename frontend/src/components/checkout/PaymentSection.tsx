@@ -11,14 +11,17 @@ export function PaymentSection({
   disabled?: boolean;
   onChange: (method: PaymentMethod) => void;
 }) {
-  const onlineReady = config?.methods.find((item) => item.id === "online")?.ready ?? false;
+  const online = config?.methods.find((item) => item.id === "online");
+  const onlineReady = online?.ready ?? false;
+  const isUpi = config?.provider === "upi" && Boolean(config.upi_vpa);
 
   return (
     <section className="card p-5">
       <h2 className="text-lg font-semibold text-ink">Payment</h2>
       <p className="mt-1 text-sm text-muted">
-        Card and UPI details are never collected on this site. Online checkout is a reserved
-        connection only.
+        {isUpi
+          ? "Choose UPI to pay directly after placing the order. We never ask for your UPI PIN on this site."
+          : "Card and UPI PINs are never collected on this site."}
       </p>
 
       <div className="mt-4 grid gap-3">
@@ -59,11 +62,15 @@ export function PaymentSection({
             className="mt-1"
           />
           <span>
-            <span className="block text-sm font-semibold text-ink">Online payment</span>
+            <span className="block text-sm font-semibold text-ink">
+              {isUpi ? "Pay with UPI" : "Online payment"}
+            </span>
             <span className="mt-0.5 block text-sm text-muted">
-              {onlineReady
-                ? `${config?.provider ?? "Gateway"} session will start after you place the order.`
-                : "Gateway keys are not loaded. The order can still be placed as pending, with no charge."}
+              {isUpi && onlineReady
+                ? `After you place the order, open any UPI app and pay ${config?.upi_vpa}.`
+                : onlineReady
+                  ? `${config?.provider ?? "Gateway"} session will start after you place the order.`
+                  : "Online pay is not connected yet. The order can still be placed as pending."}
             </span>
           </span>
         </label>

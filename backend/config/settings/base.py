@@ -259,10 +259,12 @@ CSRF_TRUSTED_ORIGINS = _ensure_origin_list(
 )
 CORS_ALLOWED_ORIGIN_REGEXES: list[str] = []
 
-# Payment gateway — leave keys empty. Never put live credentials in the repo.
-PAYMENT_PROVIDER = env("PAYMENT_PROVIDER", default="razorpay")
+# Payment — UPI for direct pay, or Razorpay keys for a gateway.
+PAYMENT_PROVIDER = env("PAYMENT_PROVIDER", default="upi")
 PAYMENT_KEY_ID = env("PAYMENT_KEY_ID", default="")
 PAYMENT_KEY_SECRET = env("PAYMENT_KEY_SECRET", default="")
+UPI_VPA = env("UPI_VPA", default="")
+UPI_PAYEE_NAME = env("UPI_PAYEE_NAME", default="FELISSI PRIVATE LIMITED")
 
 API_PUBLIC_ORIGIN = env("API_PUBLIC_ORIGIN", default="http://127.0.0.1:8000")
 FRONTEND_ORIGIN = env("FRONTEND_ORIGIN", default="http://127.0.0.1:5175").rstrip("/")

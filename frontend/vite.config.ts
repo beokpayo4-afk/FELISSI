@@ -28,11 +28,11 @@ export default defineConfig(({ mode }) => {
       proxy: {
         "/api": {
           // 8000 is often taken by another local uvicorn; FELISSI runs on 8011 when that happens.
-          target: process.env.VITE_PROXY_TARGET || "http://127.0.0.1:8011",
+          target: process.env.VITE_PROXY_TARGET || "http://127.0.0.1:8012",
           changeOrigin: true,
         },
         "/uploads": {
-          target: process.env.VITE_PROXY_TARGET || "http://127.0.0.1:8011",
+          target: process.env.VITE_PROXY_TARGET || "http://127.0.0.1:8012",
           changeOrigin: true,
         },
       },

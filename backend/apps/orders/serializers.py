@@ -173,13 +173,22 @@ class OrderListSerializer(serializers.ModelSerializer):
 class OrderDetailSerializer(OrderListSerializer):
     shipping_address = AddressSerializer(read_only=True)
     items = OrderItemSerializer(many=True, read_only=True)
+    payment = serializers.SerializerMethodField()
 
     class Meta(OrderListSerializer.Meta):
         fields = OrderListSerializer.Meta.fields + (
             "shipping_address",
             "items",
             "updated_at",
+            "payment",
         )
+
+    def get_payment(self, obj: Order) -> dict | None:
+        if obj.payment_method != "online":
+            return None
+        from apps.orders.payments import start_online_payment
+
+        return start_online_payment(obj)
 
 
 class CreateOrderSerializer(serializers.Serializer):
@@ -299,3 +308,5 @@ class PaymentConfigSerializer(serializers.Serializer):
     configured = serializers.BooleanField()
     collects_card_on_site = serializers.BooleanField()
     methods = PaymentMethodOptionSerializer(many=True)
+    upi_vpa = serializers.CharField(required=False, allow_blank=True)
+    upi_payee_name = serializers.CharField(required=False, allow_blank=True)

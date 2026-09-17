@@ -23,7 +23,7 @@ export function formatPaymentStatus(status: string): string {
 }
 
 export function formatPaymentMethod(method: string): string {
-  return method === "cod" ? "Cash on delivery" : "Online";
+  return method === "cod" ? "Cash on delivery" : "UPI / Online";
 }
 
 export function formatOrderDate(iso: string): string {

@@ -26,7 +26,7 @@ from apps.orders.serializers import (
     serialize_quote,
 )
 from apps.core.pagination import StandardPagination
-from apps.orders.payments import payment_settings, start_online_payment
+from apps.orders.payments import payment_settings
 from apps.orders.services import (
     add_cart_item,
     create_order,
@@ -224,8 +224,6 @@ class OrderViewSet(viewsets.ViewSet):
             .get(pk=order.pk)
         )
         payload = OrderDetailSerializer(order).data
-        if order.payment_method == PaymentMethod.ONLINE:
-            payload = {**payload, "payment": start_online_payment(order)}
         return Response(
             payload,
             status=status.HTTP_200_OK if existed else status.HTTP_201_CREATED,

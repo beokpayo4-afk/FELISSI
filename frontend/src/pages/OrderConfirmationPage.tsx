@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { getApiErrorMessage } from "@/api/errors";
 import { fetchOrder } from "@/api/orders";
+import { UpiPayPanel } from "@/components/checkout/UpiPayPanel";
 import { Container } from "@/components/layout/Container";
 import { MoneyBreakdown } from "@/components/shop/MoneyBreakdown";
 import { formatInrMoney } from "@/lib/money";
@@ -95,9 +96,10 @@ export function OrderConfirmationPage() {
         <h1 className="text-3xl font-semibold tracking-tight">{order.order_number}</h1>
         <p className="text-slate-600">
           Amounts below are the backend-calculated totals stored on the order. Payment method:{" "}
-          {order.payment_method === "cod" ? "Cash on delivery" : "Online"}.
+          {order.payment_method === "cod" ? "Cash on delivery" : "UPI / Online"}.
         </p>
-        {order.payment?.message ? (
+        {order.payment_method === "online" ? <UpiPayPanel order={order} /> : null}
+        {order.payment?.message && order.payment.provider !== "upi" ? (
           <p className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-700">{order.payment.message}</p>
         ) : null}
         <MoneyBreakdown
