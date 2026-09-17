@@ -24,6 +24,7 @@ import { RegisterPage } from "@/pages/RegisterPage";
 import { SearchPage } from "@/pages/SearchPage";
 import { ShopPage } from "@/pages/ShopPage";
 import { AdminDashboardPage } from "@/pages/admin/AdminDashboardPage";
+import { AdminOrderDetailPage } from "@/pages/admin/AdminOrderDetailPage";
 import { AdminOrdersPage } from "@/pages/admin/AdminOrdersPage";
 import { AdminProductCreatePage, AdminProductFormPage } from "@/pages/admin/AdminProductCreatePage";
 import { AdminProductsPage } from "@/pages/admin/AdminProductsPage";
@@ -44,6 +45,8 @@ export function AppRouter() {
             <Route path="products/new" element={<AdminProductCreatePage />} />
             <Route path="products/:productId/edit" element={<AdminProductFormPage />} />
             <Route path="orders" element={<AdminOrdersPage />} />
+            <Route path="orders/:orderNumber/invoice" element={<InvoicePage mode="staff" />} />
+            <Route path="orders/:orderNumber" element={<AdminOrderDetailPage />} />
             <Route path="settings" element={<AdminSettingsPage />} />
             <Route path="storefront" element={<AdminStorefrontPage />} />
           </Route>

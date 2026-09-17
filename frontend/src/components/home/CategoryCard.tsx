@@ -4,6 +4,9 @@ import type { CatalogCategory } from "@/types/catalog";
 
 export function CategoryCard({ category }: { category: CatalogCategory }) {
   const src = resolveMediaUrl(category.image) || category.image;
+  const fallback = category.fallbackImage
+    ? resolveMediaUrl(category.fallbackImage) || category.fallbackImage
+    : "";
   return (
     <Link to={category.to} className="group block">
       <div className="img-frame aspect-4/5 overflow-hidden">
@@ -14,7 +17,13 @@ export function CategoryCard({ category }: { category: CatalogCategory }) {
           decoding="async"
           className="size-full object-contain bg-white p-4 transition-transform duration-500 ease-out group-hover:scale-[1.04] sm:p-6"
           onError={(event) => {
-            event.currentTarget.src = "/placeholders/product.svg";
+            const target = event.currentTarget;
+            if (fallback && target.src !== fallback && target.dataset.fallback !== "1") {
+              target.dataset.fallback = "1";
+              target.src = fallback;
+              return;
+            }
+            target.src = "/placeholders/product.svg";
           }}
         />
       </div>

@@ -10,12 +10,13 @@ import { ProductGridSkeleton } from "@/components/shop/ProductCardSkeleton";
 import { ShopErrorState } from "@/components/shop/ShopErrorState";
 import { featuredCategories } from "@/data/home";
 import { useShopProducts } from "@/hooks/useShopProducts";
+import { isStorefrontProductImage } from "@/lib/catalog";
 import type { CatalogProduct } from "@/types/catalog";
 
 export function HomePage() {
   const bestSellers = useShopProducts({ best_seller: "true" });
   const newArrivals = useShopProducts({ ordering: "-created_at" });
-  const catalogFallback = useShopProducts({});
+  const catalogFallback = useShopProducts({}, { pageSize: 50 });
 
   const bestSellerProducts = pickProducts(bestSellers, catalogFallback, 8);
   const newArrivalProducts = pickProducts(newArrivals, catalogFallback, 8);
@@ -26,7 +27,13 @@ export function HomePage() {
 
   return (
     <div>
-      <HeroBanner />
+      <HeroBanner
+        image={
+          (catalogFallback.status === "ready"
+            ? catalogFallback.products.find((item) => isStorefrontProductImage(item.image))?.image
+            : undefined) ?? ""
+        }
+      />
 
       <div className="mx-auto max-w-6xl space-y-20 px-4 py-16 sm:px-6 sm:py-20">
         <section>
@@ -123,11 +130,14 @@ function withLiveCategoryImages(
   products: CatalogProduct[],
 ) {
   return categories.map((category) => {
-    const product = products.find((item) => item.category === category.id);
-    if (!product?.image || product.image.includes("/placeholders/")) {
+    const product = products.find(
+      (item) => item.category === category.id && isStorefrontProductImage(item.image),
+    );
+    // Prefer a real uploaded product photo; otherwise keep the curated catalog tile.
+    if (!product) {
       return category;
     }
-    return { ...category, image: product.image };
+    return { ...category, image: product.image, fallbackImage: category.image };
   });
 }
 

@@ -15,7 +15,7 @@ export function SiteHeader() {
   const cartCount = totals.itemCount;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-white/95 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-line bg-white/95 backdrop-blur-md print:hidden">
       <Container className="hidden items-center gap-6 py-2 lg:grid lg:grid-cols-[auto_minmax(0,1fr)_auto]">
         <Logo className="[&_img]:h-19" />
         <SearchBar className="mx-auto w-full max-w-xl" inputId="desktop-search" />

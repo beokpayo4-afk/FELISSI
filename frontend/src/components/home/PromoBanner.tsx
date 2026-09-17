@@ -13,15 +13,7 @@ export function PromoBanner({
 }) {
   return (
     <section className="relative isolate overflow-hidden bg-ink text-white">
-      <div className="absolute inset-0">
-        <img
-          src="/catalog/fluxdrive-512.jpg"
-          alt=""
-          className="size-full object-cover opacity-35"
-          loading="lazy"
-        />
-        <div className="absolute inset-0 bg-linear-to-r from-ink via-ink/85 to-ink/55" />
-      </div>
+      <div className="absolute inset-0 bg-linear-to-r from-ink via-ink/90 to-sky-950" />
 
       <div className="relative mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 py-16 sm:px-6 sm:py-20 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-xl">

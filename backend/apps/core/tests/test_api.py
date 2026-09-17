@@ -9,7 +9,7 @@ from rest_framework.test import APITestCase
 
 from apps.accounts.models import Address, Customer
 from apps.catalog.models import Brand, Category, Product, ProductImage, Review, SubCategory
-from apps.orders.models import Coupon, DiscountType, Order, OrderStatus, PaymentStatus, Wishlist
+from apps.orders.models import Coupon, DiscountType, Order, OrderItem, OrderStatus, PaymentStatus, Wishlist
 
 User = get_user_model()
 
@@ -727,7 +727,7 @@ class VoltCartAPITests(APITestCase):
             state="Chhattisgarh",
             pincode="492001",
         )
-        Order.objects.create(
+        order = Order.objects.create(
             customer=customer,
             shipping_address=address,
             subtotal=Decimal("1999.00"),
@@ -735,6 +735,17 @@ class VoltCartAPITests(APITestCase):
             total=Decimal("2358.82"),
             payment_status=PaymentStatus.PAID,
             order_status=OrderStatus.PENDING,
+        )
+        OrderItem.objects.create(
+            order=order,
+            product=self.product,
+            product_name=self.product.name,
+            sku=self.product.sku,
+            unit_price=Decimal("1499.00"),
+            quantity=2,
+            gst_percentage=Decimal("18.00"),
+            taxable_amount=Decimal("2540.68"),
+            gst_amount=Decimal("457.32"),
         )
 
         dashboard = self.client.get("/api/v1/staff/dashboard/")
@@ -793,6 +804,17 @@ class VoltCartAPITests(APITestCase):
         self.assertEqual(orders.status_code, 200)
         self.assertEqual(orders.data["count"], 1)
         number = orders.data["results"][0]["order_number"]
+        self.assertEqual(orders.data["results"][0]["item_count"], 2)
+        detail = self.client.get(f"/api/v1/staff/orders/{number}/")
+        self.assertEqual(detail.status_code, 200, detail.data)
+        self.assertEqual(detail.data["shipping_address"]["full_name"], "Riya Shah")
+        self.assertEqual(detail.data["shipping_address"]["line1"], "12 Lake Road")
+        self.assertEqual(detail.data["shipping_address"]["city"], "Raipur")
+        self.assertEqual(detail.data["shipping_address"]["phone"], "9876501234")
+        self.assertEqual(len(detail.data["items"]), 1)
+        self.assertEqual(detail.data["items"][0]["product_name"], "Nimbus Air Buds")
+        self.assertEqual(detail.data["items"][0]["quantity"], 2)
+        self.assertEqual(detail.data["items"][0]["sku"], "NB-AIR-1")
         updated = self.client.patch(
             f"/api/v1/staff/orders/{number}/",
             {"order_status": "confirmed"},
@@ -800,3 +822,4 @@ class VoltCartAPITests(APITestCase):
         )
         self.assertEqual(updated.status_code, 200, updated.data)
         self.assertEqual(updated.data["order_status"], "confirmed")
+        self.assertEqual(updated.data["items"][0]["quantity"], 2)

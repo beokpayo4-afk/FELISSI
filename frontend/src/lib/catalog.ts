@@ -9,13 +9,37 @@ export function toNumber(value: string | number | null | undefined): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+export function isStorefrontProductImage(src: string | null | undefined): boolean {
+  if (!src) {
+    return false;
+  }
+  const value = src.toLowerCase();
+  if (value.includes("/placeholders/") || value.includes("/catalog/")) {
+    return false;
+  }
+  return (
+    value.includes("/uploads/") ||
+    value.startsWith("http://") ||
+    value.startsWith("https://") ||
+    value.startsWith("data:")
+  );
+}
+
+export function storefrontProductImage(
+  url: string | null | undefined,
+  fallback = "/placeholders/product.svg",
+): string {
+  const resolved = resolveMediaUrl(url);
+  return isStorefrontProductImage(resolved) ? resolved : fallback;
+}
+
 export function toCatalogProduct(product: ApiProduct): CatalogProduct {
   const sale = product.sale_price == null ? undefined : toNumber(product.sale_price);
   return {
     id: product.id,
     slug: product.slug,
     name: product.name,
-    image: resolveMediaUrl(product.primary_image?.url) || "/placeholders/product.svg",
+    image: storefrontProductImage(product.primary_image?.url),
     imageAlt: product.primary_image?.alt_text || product.name,
     price: toNumber(product.price),
     salePrice: sale && sale > 0 ? sale : undefined,

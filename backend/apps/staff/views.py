@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db.models import Count, Prefetch, ProtectedError
+from django.db.models import Count, Prefetch, ProtectedError, Sum
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
@@ -27,6 +28,7 @@ from apps.staff.serializers import (
     StaffCategorySerializer,
     StaffDashboardSerializer,
     StaffOptionsSerializer,
+    StaffOrderDetailSerializer,
     StaffOrderSerializer,
     StaffOrderUpdateSerializer,
     StaffProductImageSerializer,
@@ -197,18 +199,32 @@ class StaffProductImageDetailView(APIView):
 class StaffOrderViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, IsStoreStaff]
     serializer_class = StaffOrderSerializer
-    search_fields = ("order_number", "customer__email", "customer__full_name")
+    search_fields = (
+        "order_number",
+        "customer__email",
+        "customer__full_name",
+        "shipping_address__full_name",
+        "shipping_address__phone",
+    )
     ordering_fields = ("created_at", "total")
     http_method_names = ["get", "patch", "head", "options"]
     lookup_field = "order_number"
     lookup_url_kwarg = "order_number"
 
+    def get_serializer_class(self):
+        if self.action in {"retrieve", "partial_update"}:
+            return StaffOrderDetailSerializer
+        return StaffOrderSerializer
+
     def get_queryset(self):
-        return (
-            Order.objects.select_related("customer")
-            .annotate(item_count=Count("items"))
+        queryset = (
+            Order.objects.select_related("customer", "shipping_address")
+            .annotate(item_count=Coalesce(Sum("items__quantity"), 0))
             .order_by("-created_at")
         )
+        if self.action in {"retrieve", "partial_update"}:
+            queryset = queryset.prefetch_related("items")
+        return queryset
 
     def partial_update(self, request, *args, **kwargs):
         order = self.get_object()
@@ -218,7 +234,7 @@ class StaffOrderViewSet(ModelViewSet):
             setattr(order, field, value)
         order.save(update_fields=[*serializer.validated_data.keys(), "updated_at"])
         order = self.get_queryset().get(pk=order.pk)
-        return Response(StaffOrderSerializer(order).data)
+        return Response(StaffOrderDetailSerializer(order).data)
 
 
 class StaffStoreSettingsView(APIView):

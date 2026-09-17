@@ -5,6 +5,7 @@ import type {
   StaffDashboard,
   StaffOptions,
   StaffOrder,
+  StaffOrderDetail,
   StaffProduct,
   StaffProductImage,
   StaffProductPayload,
@@ -135,10 +136,15 @@ export async function listStaffOrders(page = 1, search = ""): Promise<Paginated<
   return data;
 }
 
+export async function fetchStaffOrder(orderNumber: string): Promise<StaffOrderDetail> {
+  const { data } = await apiClient.get<StaffOrderDetail>(endpoints.staffOrder(orderNumber));
+  return data;
+}
+
 export async function patchStaffOrder(
   orderNumber: string,
   payload: { order_status?: string; payment_status?: string },
-): Promise<StaffOrder> {
-  const { data } = await apiClient.patch<StaffOrder>(endpoints.staffOrder(orderNumber), payload);
+): Promise<StaffOrderDetail> {
+  const { data } = await apiClient.patch<StaffOrderDetail>(endpoints.staffOrder(orderNumber), payload);
   return data;
 }

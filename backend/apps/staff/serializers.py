@@ -1,9 +1,13 @@
+from decimal import Decimal
+
 from django.utils.text import slugify
 from rest_framework import serializers
 
+from apps.accounts.serializers import AddressSerializer
 from apps.catalog.models import Brand, Category, Product, ProductImage, SubCategory
 from apps.core.models import StoreSettings
 from apps.orders.models import Order, OrderStatus, PaymentStatus
+from apps.orders.serializers import OrderItemSerializer
 
 
 class StaffBrandSerializer(serializers.ModelSerializer):
@@ -200,6 +204,34 @@ class StaffOrderSerializer(serializers.ModelSerializer):
             "item_count",
             "created_at",
         )
+
+
+class StaffOrderDetailSerializer(StaffOrderSerializer):
+    customer_phone = serializers.CharField(source="customer.phone", read_only=True)
+    shipping_address = AddressSerializer(read_only=True)
+    items = OrderItemSerializer(many=True, read_only=True)
+    taxable_subtotal = serializers.SerializerMethodField()
+
+    class Meta(StaffOrderSerializer.Meta):
+        fields = StaffOrderSerializer.Meta.fields + (
+            "customer_phone",
+            "subtotal",
+            "discount",
+            "gst",
+            "gst_inclusive",
+            "taxable_subtotal",
+            "shipping_charge",
+            "shipping_address",
+            "items",
+            "updated_at",
+        )
+
+    def get_taxable_subtotal(self, obj: Order) -> str:
+        items = list(obj.items.all())
+        total = sum((item.taxable_amount for item in items), Decimal("0.00"))
+        if total == 0 and obj.gst:
+            return f"{(obj.subtotal - obj.discount):.2f}"
+        return f"{total:.2f}"
 
 
 class StaffOrderUpdateSerializer(serializers.Serializer):

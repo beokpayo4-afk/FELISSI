@@ -10,8 +10,7 @@ import {
 } from "react";
 import { addCartItem, fetchCart, quoteCart, removeCartItem, updateCartItem } from "@/api/cart";
 import { getApiErrorMessage } from "@/api/errors";
-import { toNumber } from "@/lib/catalog";
-import { resolveMediaUrl } from "@/lib/env";
+import { storefrontProductImage, toNumber } from "@/lib/catalog";
 import { isCatalogProductId } from "@/lib/productId";
 import { useAuth } from "@/store/AuthContext";
 import {
@@ -47,7 +46,7 @@ function mapLine(item: ApiCartItem): CartLine {
     variantName: item.variant_name,
     name: item.variant_name ? `${item.product.name} — ${item.variant_name}` : item.product.name,
     slug: item.product.slug,
-    image: resolveMediaUrl(item.product.primary_image?.url) || "/placeholders/product.svg",
+    image: storefrontProductImage(item.product.primary_image?.url),
     imageAlt: item.product.primary_image?.alt_text || item.product.name,
     quantity: item.quantity,
     unitPrice: toNumber(item.unit_price),

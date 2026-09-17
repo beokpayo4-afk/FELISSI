@@ -132,6 +132,63 @@ class ProductImageStorageTests(APITestCase):
         by_url = self.client.get(stored_url)
         self.assertEqual(by_url.status_code, 200, by_url.content[:200])
 
+    def test_serves_later_match_when_earlier_row_has_no_file_content(self):
+        ProductImage.objects.create(
+            product=self.product,
+            url="/uploads/products/shared.webp",
+            storage_key="products/shared.webp",
+            file_content=None,
+            alt_text="Empty",
+            is_primary=True,
+            sort_order=0,
+        )
+        payload = tiny_png("front.png").read()
+        filled = ProductImage.objects.create(
+            product=self.product,
+            url="/uploads/products/shared.webp",
+            storage_key="products/shared.webp",
+            file_content=payload,
+            file_content_type="image/png",
+            alt_text="Filled",
+            is_primary=False,
+            sort_order=1,
+        )
+        response = self.client.get("/uploads/products/shared.webp")
+        self.assertEqual(response.status_code, 200, response.content[:200])
+        self.assertEqual(response.content, bytes(filled.file_content))
+
+    def test_public_api_omits_unserveable_upload(self):
+        ProductImage.objects.create(
+            product=self.product,
+            url="/uploads/products/missing.webp",
+            storage_key="products/missing.webp",
+            file_content=None,
+            alt_text="Missing file",
+            is_primary=True,
+            sort_order=0,
+        )
+        detail = self.client.get(f"/api/v1/products/{self.product.slug}/")
+        self.assertEqual(detail.status_code, 200, detail.data)
+        self.assertIsNone(detail.data["primary_image"])
+        self.assertEqual(detail.data["images"], [])
+        listing = self.client.get("/api/v1/products/")
+        self.assertEqual(listing.status_code, 200)
+        match = next(item for item in listing.data["results"] if item["slug"] == self.product.slug)
+        self.assertIsNone(match["primary_image"])
+
+    def test_public_api_omits_catalog_standin_images(self):
+        ProductImage.objects.create(
+            product=self.product,
+            url="/catalog/nimbus-air-buds.jpg",
+            alt_text="Stand-in",
+            is_primary=True,
+            sort_order=0,
+        )
+        detail = self.client.get(f"/api/v1/products/{self.product.slug}/")
+        self.assertEqual(detail.status_code, 200, detail.data)
+        self.assertIsNone(detail.data["primary_image"])
+        self.assertEqual(detail.data["images"], [])
+
     def test_placeholder_upload_path_is_not_a_debug_404(self):
         response = self.client.get("/uploads/products/%3Cthat-file%3E.webp")
         self.assertEqual(response.status_code, 404)

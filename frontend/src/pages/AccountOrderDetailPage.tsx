@@ -89,7 +89,7 @@ export function AccountOrderDetailPage() {
           to={`/account/orders/${order.order_number}/invoice`}
           className="mt-5 inline-flex h-10 items-center rounded-full bg-sky-600 px-4 text-sm font-semibold text-white hover:bg-sky-700"
         >
-          View invoice
+          Download invoice
         </Link>
       </div>
     </section>

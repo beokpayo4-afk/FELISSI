@@ -21,14 +21,20 @@ MISSING_UPLOAD = (
 )
 
 
+def image_is_renderable(image) -> bool:
+    """True when the storefront can actually display this image."""
+    if getattr(image, "file_content", None):
+        return True
+    url = (getattr(image, "url", "") or "").strip()
+    if not url:
+        return False
+    return url.startswith(("http://", "https://", "/placeholders/", "/brand/"))
+
+
 def public_product_image_url(image) -> str:
     """Stable public path that is looked up by primary key."""
     url = (getattr(image, "url", "") or "").strip()
-    if getattr(image, "pk", None) and (
-        getattr(image, "storage_key", "")
-        or getattr(image, "file_content", None)
-        or url.startswith("/uploads/")
-    ):
+    if getattr(image, "pk", None) and getattr(image, "file_content", None):
         return f"/uploads/images/{image.pk}"
     return url
 
@@ -84,7 +90,7 @@ def _bytes_from_database(relative: str) -> tuple[bytes, str] | None:
             return found
 
     filename = relative.rsplit("/", 1)[-1]
-    image = (
+    candidates = (
         ProductImage.objects.filter(
             Q(storage_key=relative)
             | Q(storage_key=filename)
@@ -93,10 +99,15 @@ def _bytes_from_database(relative: str) -> tuple[bytes, str] | None:
             | Q(url__endswith=f"/{filename}")
             | Q(url__endswith=relative)
         )
+        .exclude(file_content__isnull=True)
         .order_by("id")
-        .first()
+        .iterator()
     )
-    return _content_from_image(image)
+    for image in candidates:
+        found = _content_from_image(image)
+        if found:
+            return found
+    return None
 
 
 def _image_response(body: bytes, content_type: str) -> HttpResponse:

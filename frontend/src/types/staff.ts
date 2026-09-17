@@ -1,3 +1,5 @@
+import type { ApiOrder } from "@/types/order";
+
 export interface StaffDashboard {
   generated_at: string;
   timezone: string;
@@ -94,6 +96,13 @@ export interface StaffOrder {
   order_status: string;
   item_count: number;
   created_at: string;
+}
+
+export interface StaffOrderDetail extends ApiOrder {
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  item_count: number;
 }
 
 export interface StaffOptions {

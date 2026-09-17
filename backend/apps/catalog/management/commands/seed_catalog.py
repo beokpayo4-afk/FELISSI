@@ -823,14 +823,8 @@ class Command(BaseCommand):
             )
             created += int(was_created)
             updated += int(not was_created)
-            product.images.all().delete()
-            ProductImage.objects.create(
-                product=product,
-                url=catalog_image_url(item),
-                alt_text=f"{item['name']} product image",
-                is_primary=True,
-                sort_order=0,
-            )
+            # Keep uploaded photos. Drop generated /catalog/*.jpg stand-ins.
+            product.images.filter(file_content__isnull=True, url__startswith="/catalog/").delete()
 
         reviewers = [
             ("Asha Verma", "asha.reviews@example.com", "9811111111"),

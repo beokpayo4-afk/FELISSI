@@ -14,6 +14,7 @@ from apps.catalog.models import (
     Review,
     SubCategory,
 )
+from apps.core.media import image_is_renderable, public_product_image_url
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
@@ -50,9 +51,25 @@ class ProductImageSerializer(serializers.ModelSerializer):
         fields = ("id", "url", "alt_text", "sort_order", "is_primary")
 
     def get_url(self, obj: ProductImage) -> str:
-        from apps.core.media import public_product_image_url
-
         return public_product_image_url(obj)
+
+
+def serialize_product_image(image: ProductImage | None) -> dict | None:
+    if image is None:
+        return None
+    return ProductImageSerializer(image).data
+
+
+def pick_product_image(obj: Product, *, public: bool = False) -> ProductImage | None:
+    images = list(obj.images.all())
+    if not images:
+        return None
+    if public:
+        usable = [image for image in images if image_is_renderable(image)]
+        if not usable:
+            return None
+        return next((image for image in usable if image.is_primary), usable[0])
+    return next((image for image in images if image.is_primary), images[0])
 
 
 class SearchProductSerializer(serializers.ModelSerializer):
@@ -65,12 +82,7 @@ class SearchProductSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "slug", "sku", "price", "sale_price", "brand", "category", "primary_image")
 
     def get_primary_image(self, obj: Product) -> dict | None:
-        image = next((img for img in obj.images.all() if img.is_primary), None)
-        if image is None:
-            image = next(iter(obj.images.all()), None)
-        if image is None:
-            return None
-        return ProductImageSerializer(image).data
+        return serialize_product_image(pick_product_image(obj, public=True))
 
 
 class ProductVariantSerializer(serializers.ModelSerializer):
@@ -121,12 +133,7 @@ class ProductListSerializer(serializers.ModelSerializer):
         )
 
     def get_primary_image(self, obj: Product) -> dict | None:
-        image = next((img for img in obj.images.all() if img.is_primary), None)
-        if image is None:
-            image = next(iter(obj.images.all()), None)
-        if image is None:
-            return None
-        return ProductImageSerializer(image).data
+        return serialize_product_image(pick_product_image(obj, public=True))
 
     def get_effective_price(self, obj: Product) -> Decimal:
         return obj.sale_price if obj.sale_price is not None else obj.price
@@ -159,7 +166,7 @@ class ProductListSerializer(serializers.ModelSerializer):
 
 
 class ProductDetailSerializer(ProductListSerializer):
-    images = ProductImageSerializer(many=True, read_only=True)
+    images = serializers.SerializerMethodField()
     variants = serializers.SerializerMethodField()
 
     class Meta(ProductListSerializer.Meta):
@@ -169,6 +176,10 @@ class ProductDetailSerializer(ProductListSerializer):
             "variants",
             "updated_at",
         )
+
+    def get_images(self, obj: Product) -> list:
+        images = [image for image in obj.images.all() if image_is_renderable(image)]
+        return ProductImageSerializer(images, many=True).data
 
     def get_variants(self, obj: Product) -> list:
         variants = [item for item in obj.variants.all() if item.is_active]

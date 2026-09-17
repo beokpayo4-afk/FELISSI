@@ -203,7 +203,7 @@ export function AdminDashboardPage() {
                 </div>
                 <div className="h-2 rounded-full bg-[#f3eee6]">
                   <div
-                    className="h-2 rounded-full bg-[#12352c]"
+                    className="h-2 rounded-full bg-forest"
                     style={{ width: `${Math.round((count / mixMax) * 100)}%` }}
                   />
                 </div>

@@ -18,6 +18,7 @@ export interface CatalogCategory {
   name: string;
   to: string;
   image: string;
+  fallbackImage?: string;
   description: string;
 }
 

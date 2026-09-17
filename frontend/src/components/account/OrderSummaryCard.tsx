@@ -26,7 +26,10 @@ export function OrderSummaryCard({ order }: { order: ApiOrder }) {
           {order.items.map((item) => (
             <li key={item.id} className="flex justify-between gap-3">
               <span>
-                {item.product_name} × {item.quantity}
+                {item.product_name}
+                <span className="block text-xs text-slate-500">
+                  {item.sku ? `${item.sku} · ` : ""}Qty {item.quantity}
+                </span>
               </span>
               <span className="text-right">
                 {formatInrMoney(toNumber(item.unit_price) * item.quantity)}

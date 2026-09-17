@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import { getApiErrorMessage } from "@/api/errors";
 import { listStaffOrders, patchStaffOrder } from "@/api/staff";
 import { toNumber } from "@/lib/catalog";
@@ -63,7 +64,9 @@ export function AdminOrdersPage() {
     <div className="space-y-5">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight text-slate-950">Orders</h1>
-        <p className="mt-1 text-sm text-slate-500">{count} store orders</p>
+        <p className="mt-1 text-sm text-slate-500">
+          {count} store orders · Open an order for the shipping address, items, quantities, and invoice
+        </p>
       </div>
 
       <form
@@ -99,6 +102,7 @@ export function AdminOrdersPage() {
             <tr>
               <th className="px-4 py-3">Order</th>
               <th className="px-4 py-3">Customer</th>
+              <th className="px-4 py-3">Qty</th>
               <th className="px-4 py-3">Total</th>
               <th className="px-4 py-3">Payment</th>
               <th className="px-4 py-3">Status</th>
@@ -107,14 +111,14 @@ export function AdminOrdersPage() {
           <tbody>
             {pending ? (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-slate-500">
+                <td colSpan={6} className="px-4 py-10 text-center text-slate-500">
                   Loading orders…
                 </td>
               </tr>
             ) : null}
             {!pending && items.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-slate-500">
+                <td colSpan={6} className="px-4 py-10 text-center text-slate-500">
                   No orders yet.
                 </td>
               </tr>
@@ -122,13 +126,16 @@ export function AdminOrdersPage() {
             {items.map((order) => (
               <tr key={order.id} className="border-t border-slate-100">
                 <td className="px-4 py-3">
-                  <p className="font-medium text-slate-950">{order.order_number}</p>
+                  <Link to={`/admin/orders/${order.order_number}`} className="font-medium text-sky-700 hover:text-sky-800">
+                    {order.order_number}
+                  </Link>
                   <p className="text-xs text-slate-500">{formatOrderDate(order.created_at)}</p>
                 </td>
                 <td className="px-4 py-3">
                   <p>{order.customer_name}</p>
                   <p className="text-xs text-slate-500">{order.customer_email}</p>
                 </td>
+                <td className="px-4 py-3">{order.item_count}</td>
                 <td className="px-4 py-3">{formatInrMoney(toNumber(order.total))}</td>
                 <td className="px-4 py-3">{formatPaymentStatus(order.payment_status)}</td>
                 <td className="px-4 py-3">

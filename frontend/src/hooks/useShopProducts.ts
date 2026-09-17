@@ -13,12 +13,13 @@ export type ShopProductsState =
 
 export function useShopProducts(
   query: ShopQuery,
-  options?: { enabled?: boolean },
+  options?: { enabled?: boolean; pageSize?: number },
 ): ShopProductsState & { reload: () => void } {
   const [state, setState] = useState<ShopProductsState>({ status: "loading" });
   const [tick, setTick] = useState(0);
   const enabled = options?.enabled ?? true;
-  const key = shopQueryKey(query);
+  const pageSize = options?.pageSize;
+  const key = `${shopQueryKey(query)}:${pageSize ?? ""}`;
 
   useEffect(() => {
     if (!enabled) {
@@ -28,7 +29,7 @@ export function useShopProducts(
     const controller = new AbortController();
     setState({ status: "loading" });
 
-    listProducts(query, { signal: controller.signal })
+    listProducts(query, { signal: controller.signal, pageSize })
       .then((page) => {
         const products = page.results.map(toCatalogProduct);
         setState(

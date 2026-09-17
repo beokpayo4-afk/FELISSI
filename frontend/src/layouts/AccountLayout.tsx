@@ -16,7 +16,7 @@ export function AccountLayout() {
       <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start">
         <nav
           aria-label="Account"
-          className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0"
+          className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 print:hidden lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0"
         >
           {links.map((link) => (
             <NavLink

@@ -7,7 +7,7 @@ import { Logo } from "@/components/layout/Logo";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-auto border-t border-line bg-white">
+    <footer className="mt-auto border-t border-line bg-white print:hidden">
       <Container className="grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-3">
           <Logo className="[&_img]:h-24" />

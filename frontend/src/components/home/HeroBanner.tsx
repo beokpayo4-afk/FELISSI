@@ -1,15 +1,19 @@
 import { Link } from "react-router-dom";
 import { company } from "@/constants/company";
+import { isStorefrontProductImage } from "@/lib/catalog";
 
-export function HeroBanner() {
+export function HeroBanner({ image = "" }: { image?: string }) {
+  const photo = isStorefrontProductImage(image) ? image : "";
   return (
     <section className="home-hero relative isolate min-h-[min(88vh,52rem)] overflow-hidden bg-forest text-white">
       <div className="absolute inset-0 lg:left-[38%]">
-        <img
-          src="/catalog/nimbus-air-buds.jpg"
-          alt=""
-          className="home-hero-media size-full object-cover object-[center_30%]"
-        />
+        {photo ? (
+          <img
+            src={photo}
+            alt=""
+            className="home-hero-media size-full object-contain bg-forest p-8 lg:object-cover lg:p-0"
+          />
+        ) : null}
         <div className="absolute inset-0 bg-linear-to-t from-forest via-forest/70 to-forest/25 lg:bg-linear-to-r lg:from-forest lg:from-15% lg:via-forest/50 lg:via-35% lg:to-transparent lg:to-70%" />
       </div>
 

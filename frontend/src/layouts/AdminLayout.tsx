@@ -17,8 +17,8 @@ export function AdminLayout() {
   const { customer, logout } = useAuth();
 
   return (
-    <div className="min-h-svh bg-[#f6f3ee] text-slate-900">
-      <aside className="fixed inset-y-0 left-0 z-20 flex w-64 flex-col bg-[#12352c] text-[#e8efe9]">
+    <div className="min-h-svh bg-cream text-slate-900">
+      <aside className="fixed inset-y-0 left-0 z-20 flex w-64 flex-col bg-forest text-[#e8efe9] print:hidden">
         <div className="flex items-center gap-3 px-5 py-5">
           <span className="flex size-9 items-center justify-center rounded-lg bg-[#2f6f4e] text-sm font-bold text-white">
             V
@@ -37,7 +37,7 @@ export function AdminLayout() {
               className={({ isActive }) =>
                 cn(
                   "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
-                  isActive ? "bg-[#1d4d40] text-white" : "text-[#c5d6ce] hover:bg-white/5 hover:text-white",
+                  isActive ? "bg-forest-600 text-white" : "text-[#c5d6ce] hover:bg-white/5 hover:text-white",
                 )
               }
             >
@@ -56,8 +56,8 @@ export function AdminLayout() {
         </button>
       </aside>
 
-      <div className="pl-64">
-        <header className="flex items-center justify-between gap-4 border-b border-black/5 bg-[#f6f3ee] px-8 py-5">
+      <div className="pl-64 print:pl-0">
+        <header className="flex items-center justify-between gap-4 border-b border-black/5 bg-cream px-8 py-5 print:hidden">
           <div>
             <p className="text-sm font-medium text-slate-500">Admin workspace</p>
             <p className="text-sm text-slate-500">Manage catalogue, stock, and store operations</p>
@@ -67,7 +67,7 @@ export function AdminLayout() {
               <Bell className="size-4" aria-hidden="true" />
             </span>
             <div className="flex items-center gap-3 rounded-full border border-slate-200 bg-white py-1 pr-4 pl-1">
-              <span className="flex size-9 items-center justify-center rounded-full bg-[#12352c] text-sm font-semibold text-white">
+              <span className="flex size-9 items-center justify-center rounded-full bg-forest text-sm font-semibold text-white">
                 {(customer?.full_name || "A").slice(0, 1).toUpperCase()}
               </span>
               <span className="text-right">
@@ -79,7 +79,7 @@ export function AdminLayout() {
             </div>
           </div>
         </header>
-        <main className="px-8 py-6">
+        <main className="px-8 py-6 print:p-0">
           <Outlet />
         </main>
       </div>
